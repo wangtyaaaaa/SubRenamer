@@ -13,7 +13,7 @@ namespace WindowsFormsApplication2
         //private static String regex  = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA_Z\\s]{5,200})";
         private static String regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
         private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
-
+        private static String regex_headAndTail = "第|話|话|集";
         public static void Rename(Names names, BackgroundWorker bkWorker)
         {
             Rename(names, bkWorker, 0);
@@ -196,7 +196,9 @@ namespace WindowsFormsApplication2
                     str2 = str2.Substring(index + 1);
                 }
 
-                if (str2.Length <= 1 || str2.Length >= 5)
+                str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
+
+                if (str2.Length <= 1 || str2.Length >= 4)
                 {
                     continue;
                 }
@@ -207,6 +209,9 @@ namespace WindowsFormsApplication2
             }
             return null;
         }
+
+
+
 
         private static bool isNumberic(string str)
         {
