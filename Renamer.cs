@@ -124,7 +124,7 @@ namespace WindowsFormsApplication2
                 {
                     return true;
                 }
-                else if (int.Parse(subNum) == int.Parse(num))
+                else if (float.Parse(subNum) == float.Parse(num))
                 {
                     return true;
                 }
@@ -198,14 +198,28 @@ namespace WindowsFormsApplication2
 
                 str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
 
-                if (str2.Length <= 1 || str2.Length >= 4)
+                float f;
+                if (!float.TryParse(str2, out f))
                 {
                     continue;
                 }
-                else if (isNumberic(str2))
+
+                if (f < 0 || f > 1900)
                 {
-                    return str2;
+                    continue;
                 }
+
+                return str2;
+
+
+                //if (str2.Length <= 1 || str2.Length >= 4)
+                //{
+                //    continue;
+                //}
+                //else if (isNumberic(str2))
+                //{
+                //    return str2;
+                //}
             }
             return null;
         }
@@ -267,7 +281,7 @@ namespace WindowsFormsApplication2
             s = s.Replace(')', ' ');
             s = s.Replace('{', ' ');
             s = s.Replace('}', ' ');
-            s = s.Replace('.', ' ');
+            //s = s.Replace('.', ' ');
             s = System.Text.RegularExpressions.Regex.Replace(s, "[\\s]+", " ");
             return s;
         }
