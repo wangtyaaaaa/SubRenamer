@@ -16,44 +16,82 @@ namespace WindowsFormsApplication2
         private static String regex_headAndTail = "第|話|话|集";
         public static void Rename(Names names, BackgroundWorker bkWorker)
         {
-            Rename(names, bkWorker, 0);
+            Rename(names, bkWorker, 0, names.isRegex);
         }
-        public static void Rename(Names names,BackgroundWorker bkWorker,int count)
+        public static void Rename(Names names, BackgroundWorker bkWorker, int count, bool isRegex)
         {
-      //      string aaa = "dwads 10bit 1080p 最终流放 Last_ecxile 1024x786 x264 ep011 14a341cf.ssa";
-        //    aaa = System.Text.RegularExpressions.Regex.Replace(aaa, regex, "");
-          //  bool b = isFitNum(aaa, "01");
-            int c=count;
-            foreach (var video in names.videos)
-            {
-                if(bkWorker!=null){
-                    bkWorker.ReportProgress(++c,video.Name);
-                }
-                string num = getVideoNumber(video);
-                if (num == null)
-                {
-                    continue;
-                }
-                LinkedList<FileInfo> subs = getSubList(names, num);
-                string vname = getFullNameWithOutExtension(video);
-                foreach (var sub in subs)
-                {
-                    string ext = getFullExtension(sub);
-                    try
-                    {
-                        sub.MoveTo(vname + ext);
-                    }
-                    catch
-                    {
-                        sub.MoveTo(vname + "."+sub.Name);
-                    }
-                }
+            //      string aaa = "dwads 10bit 1080p 最终流放 Last_ecxile 1024x786 x264 ep011 14a341cf.ssa";
+            //    aaa = System.Text.RegularExpressions.Regex.Replace(aaa, regex, "");
+            //  bool b = isFitNum(aaa, "01");
+            int c = count;
 
-            }
-            foreach (var name in names.names)
+            if (isRegex)
             {
-                Rename(name, bkWorker,c);
+                Dictionary<FileInfo, string> videoDic = getDic(names.videos, names.getVideoReplasePattern());
+                Dictionary<FileInfo, string> subDic = getDic(names.subs, names.getSubReplasePattern());
+
+                foreach (var video in videoDic.Keys)
+                {
+                    if (bkWorker != null)
+                    {
+                        bkWorker.ReportProgress(++c, video.Name);
+                    }
+                    LinkedList<FileInfo> subs = getSubList(subDic, videoDic[video]);
+                    renameSubs(video, subs);
+                }
             }
+            else
+            {
+                foreach (var video in names.videos)
+                {
+                    if (bkWorker != null)
+                    {
+                        bkWorker.ReportProgress(++c, video.Name);
+                    }
+                    string num = getVideoNumber(video);
+                    if (num == null)
+                    {
+                        continue;
+                    }
+                    LinkedList<FileInfo> subs = getSubList(names, num);
+                    renameSubs(video, subs);
+
+                }
+                foreach (var name in names.names)
+                {
+                    Rename(name, bkWorker, c, name.isRegex);
+                }
+            }
+        }
+
+        private static void renameSubs(FileInfo video, LinkedList<FileInfo> subs)
+        {
+            string vname = getFullNameWithOutExtension(video);
+            foreach (var sub in subs)
+            {
+                string ext = getFullExtension(sub);
+                try
+                {
+                    sub.MoveTo(vname + ext);
+                }
+                catch
+                {
+                    sub.MoveTo(vname + "." + sub.Name);
+                }
+            }
+        }
+
+
+        private static Dictionary<FileInfo, string> getDic(LinkedList<FileInfo> videos, string p)
+        {
+            Dictionary<FileInfo, string> dic = new Dictionary<FileInfo, string>();
+            foreach (var video in videos)
+            {
+                string name = video.Name;
+                string str = System.Text.RegularExpressions.Regex.Replace(name, p, "");
+                dic.Add(video, str);
+            }
+            return dic;
         }
 
         private static string getFullNameWithOutExtension(FileInfo video)
@@ -115,6 +153,20 @@ namespace WindowsFormsApplication2
             return subs;
         }
 
+        private static LinkedList<FileInfo> getSubList(Dictionary<FileInfo, string> subDic, string key)
+        {
+            LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+            foreach (var sub in subDic.Keys)
+            {
+                if (subDic[sub].Equals(key))
+                {
+                    subs.AddLast(sub);
+                   // subDic.Remove(sub);
+                }
+            }
+            return subs;
+        }
+
         private static bool isFit(FileInfo sub, string num)
         {
             string subNum = getVideoNumber(sub);
@@ -149,7 +201,7 @@ namespace WindowsFormsApplication2
         {
             char[] na = name.ToCharArray();
             char[] nm = num.ToCharArray();
-            for (int i = 0; i < na.Length-nm.Length+1; i++)
+            for (int i = 0; i < na.Length - nm.Length + 1; i++)
             {
                 bool ifcontinue = false;
                 if (na[i] == nm[0])
@@ -191,7 +243,7 @@ namespace WindowsFormsApplication2
                 string str2 = str;
                 while (str2.ToLower().Contains("ep"))
                 {
-                    char[] p = {'p','P'};
+                    char[] p = { 'p', 'P' };
                     int index = str2.IndexOfAny(p);
                     str2 = str2.Substring(index + 1);
                 }
@@ -309,7 +361,7 @@ namespace WindowsFormsApplication2
             int count = 0;
             for (int i = begin + 1; i < ca.Length; i++)
             {
-                
+
                 if (ca[i] == right)
                 {
                     if (count == 0)
