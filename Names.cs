@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace WindowsFormsApplication2
 {
@@ -51,10 +48,13 @@ namespace WindowsFormsApplication2
         {
             if (dInfo.Exists)
             {
-                string v_patt = "^" + v_left + "[.]{2,6}" + v_right;
-                string s_patt = "^" + s_left + "[.]{2,6}" + s_right;
+                string v_patt = "^" + v_left + "\\S{1,6}" + v_right + "$";
+                string s_patt = "^" + s_left + "\\S{1,6}" + s_right + "$";
+                //MessageBox.Show("视频：\n"+v_patt + "\n字幕：\n" + s_patt);
                 //Regex regex_v = new Regex(v_patt);
                 //Regex regex_s = new Regex(s_patt);
+                try
+                {
                 foreach (var item in dInfo.GetFiles())
                 {
                     string name = item.Name;
@@ -67,6 +67,12 @@ namespace WindowsFormsApplication2
                     {
                         this.subs.AddLast(item);
                     }
+                }
+
+                }
+                catch(Exception e)
+                {
+                    MessageBox.Show("匹配错误，请检查表达式\n"+e.Message);
                 }
             }
         }

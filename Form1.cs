@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.IO;
-using System.Threading;
+using System.Windows.Forms;
 
 namespace WindowsFormsApplication2
 {
@@ -37,7 +30,7 @@ namespace WindowsFormsApplication2
         {
             InitializeComponent();
             this.textBox_path.Text = System.Environment.CurrentDirectory;
-            //this.textBox1.Text = "D:\\aaa\\aaa";
+            //this.textBox_path.Text = "D:\\aaa\\aaa";
             setPanelRegexVisible(false);
             lable_num_width = label_video_num.Width ;
         }
@@ -230,6 +223,43 @@ namespace WindowsFormsApplication2
             textBox_sub_right.Width = groupBox_sub.Right - textBox_sub_right.Left - 6 ;
             textBox_sub_left.Width = groupBox_sub.Width / 2 - (lable_num_width / 2 + 10) - groupBox_sub.Left;
             label_sub_num.Left = groupBox_sub.Width / 2 - lable_num_width / 2;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            TransferChar(textBox_video_left,textBox_video_right, textBox_sub_left, textBox_sub_right);
+        }
+
+        private static void TransferChar(params TextBox[] textBoxs)
+        {
+            foreach(TextBox textBox in textBoxs)
+            {
+                string str = textBox.Text;
+                str = str.Replace("\\", "\\\\");
+                str = str.Replace("]", "\\]");
+                str = str.Replace("[", "\\[");
+                str = str.Replace("}", "\\}");
+                str = str.Replace("{", "\\{");
+                str = str.Replace(")", "\\)");
+                str = str.Replace("(", "\\(");
+                str = str.Replace("^", "\\^");
+                str = str.Replace("$", "\\$");
+                str = str.Replace("|", "\\|");
+                str = str.Replace("*", "\\*");
+                str = str.Replace("+", "\\+");
+                str = str.Replace(".", "\\.");
+                str = str.Replace("?", "\\?");
+                textBox.Text = str;
+                //string patt = "[\\\\\\[\\]\\(\\)\\{\\}^$|*+?]";
+                //MessageBox.Show(patt);
+                //MatchCollection res = Regex.Matches(str, patt);
+                //string aaa = "";
+                //foreach (Match v in res)
+                //{
+                //    aaa += v.Value + "\n";
+                //}
+                //MessageBox.Show(aaa);
+            }
         }
     }
 }

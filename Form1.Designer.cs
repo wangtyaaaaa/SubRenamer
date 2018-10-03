@@ -50,6 +50,7 @@
             this.panel_name = new System.Windows.Forms.Panel();
             this.button_regex_panel = new System.Windows.Forms.Button();
             this.panel_path = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel_regex.SuspendLayout();
@@ -96,7 +97,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView1.Location = new System.Drawing.Point(6, 33);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(363, 115);
+            this.treeView1.Size = new System.Drawing.Size(363, 85);
             this.treeView1.TabIndex = 3;
             // 
             // button_doRename
@@ -156,11 +157,12 @@
             // 
             this.panel_regex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel_regex.Controls.Add(this.button1);
             this.panel_regex.Controls.Add(this.groupBox_sub);
             this.panel_regex.Controls.Add(this.groupBox_video);
             this.panel_regex.Location = new System.Drawing.Point(6, 46);
             this.panel_regex.Name = "panel_regex";
-            this.panel_regex.Size = new System.Drawing.Size(375, 100);
+            this.panel_regex.Size = new System.Drawing.Size(375, 130);
             this.panel_regex.TabIndex = 6;
             // 
             // groupBox_sub
@@ -252,9 +254,9 @@
             this.panel_name.Controls.Add(this.button_name);
             this.panel_name.Controls.Add(this.treeView1);
             this.panel_name.Controls.Add(this.button_doRename);
-            this.panel_name.Location = new System.Drawing.Point(6, 152);
+            this.panel_name.Location = new System.Drawing.Point(6, 182);
             this.panel_name.Name = "panel_name";
-            this.panel_name.Size = new System.Drawing.Size(375, 151);
+            this.panel_name.Size = new System.Drawing.Size(375, 121);
             this.panel_name.TabIndex = 5;
             // 
             // button_regex_panel
@@ -278,6 +280,16 @@
             this.panel_path.Name = "panel_path";
             this.panel_path.Size = new System.Drawing.Size(375, 33);
             this.panel_path.TabIndex = 2;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(7, 104);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(103, 23);
+            this.button1.TabIndex = 2;
+            this.button1.Text = "自动转义";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Form1
             // 
@@ -332,6 +344,7 @@
         private System.Windows.Forms.TextBox textBox_video_right;
         private System.Windows.Forms.Label label_video_num;
         private System.Windows.Forms.Button button_regex_panel;
+        private System.Windows.Forms.Button button1;
     }
 }
 
