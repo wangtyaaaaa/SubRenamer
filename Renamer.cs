@@ -10,55 +10,78 @@ namespace WindowsFormsApplication2
     {
         //private static String regex  = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA_Z\\s]{5,200})";
         private static String regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
-        private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
+       // private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
         private static String regex_headAndTail = "第|話|话|集";
         public static void Rename(Names names, BackgroundWorker bkWorker)
         {
-            Rename(names, bkWorker, 0, names.isRegex);
-        }
-        public static void Rename(Names names, BackgroundWorker bkWorker, int count, bool isRegex)
-        {
-            //      string aaa = "dwads 10bit 1080p 最终流放 Last_ecxile 1024x786 x264 ep011 14a341cf.ssa";
-            //    aaa = System.Text.RegularExpressions.Regex.Replace(aaa, regex, "");
-            //  bool b = isFitNum(aaa, "01");
-            int c = count;
-
-            if (isRegex)
+            if (names.isRegex)
             {
-                Dictionary<FileInfo, string> videoDic = getDic(names.videos, names.getVideoReplasePattern());
-                Dictionary<FileInfo, string> subDic = getDic(names.subs, names.getSubReplasePattern());
-
-                foreach (var video in videoDic.Keys)
-                {
-                    if (bkWorker != null)
-                    {
-                        bkWorker.ReportProgress(++c, video.Name);
-                    }
-                    LinkedList<FileInfo> subs = getSubList(subDic, videoDic[video]);
-                    renameSubs(video, subs);
-                }
+                Rename_Regex(names, bkWorker);
+            }else if (names.reslovered)
+            {
+                Rename_Reslobered(names, bkWorker);
             }
-            else
-            {
-                foreach (var video in names.videos)
-                {
-                    if (bkWorker != null)
-                    {
-                        bkWorker.ReportProgress(++c, video.Name);
-                    }
-                    string num = getVideoNumber(video);
-                    if (num == null)
-                    {
-                        continue;
-                    }
-                    LinkedList<FileInfo> subs = getSubList(names, num);
-                    renameSubs(video, subs);
+            Rename(names, bkWorker, 0);
+        }
 
-                }
-                foreach (var name in names.names)
+        private static void Rename_Reslobered(Names names, BackgroundWorker bkWorker)
+        {
+            int c = 0;
+            foreach (var video in names.videos)
+            {
+                if (bkWorker != null)
                 {
-                    Rename(name, bkWorker, c, name.isRegex);
+                    bkWorker.ReportProgress(++c, video.file.Name);
                 }
+                string num = video.num; ;
+                if (num == null || num == "") 
+                {
+                    continue;
+                }
+                LinkedList<FileInfo> subs = getSubList(names, num);
+                renameSubs(video.file, subs);
+
+            }
+        }
+
+        public static void Rename(Names names, BackgroundWorker bkWorker, int count)
+        {
+            int c = count;
+            foreach (var video in names.videos)
+            {
+                if (bkWorker != null)
+                {
+                    bkWorker.ReportProgress(++c, video.file.Name);
+                }
+                string num = getVideoNumber(video.file);
+                if (num == null)
+                {
+                    continue;
+                }
+                LinkedList<FileInfo> subs = getSubList(names, num);
+                renameSubs(video.file, subs);
+
+            }
+            foreach (var name in names.names)
+            {
+                Rename(name, bkWorker, c);
+            }
+
+        }
+
+        private static void Rename_Regex(Names names, BackgroundWorker bkWorker)
+        {
+            Dictionary<FileInfo, string> videoDic = getDic(names.getVideoFileList(), names.getVideoReplasePattern());
+            Dictionary<FileInfo, string> subDic = getDic(names.subs, names.getSubReplasePattern());
+            int c = 0;
+            foreach (var video in videoDic.Keys)
+            {
+                if (bkWorker != null)
+                {
+                    bkWorker.ReportProgress(++c, video.Name);
+                }
+                LinkedList<FileInfo> subs = getSubList(subDic, videoDic[video]);
+                renameSubs(video, subs);
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SubRenamer;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
@@ -80,7 +81,7 @@ namespace WindowsFormsApplication2
             DirectoryInfo dInfo = new DirectoryInfo(this.textBox_path.Text);
             if (!panel_regex.Visible)
             {
-                names = new Names(dInfo);
+                names = new Names(dInfo,true);
             }
             else
             {
@@ -162,6 +163,7 @@ namespace WindowsFormsApplication2
             this.button_path.Enabled = p;
             this.button_name.Enabled = p;
             this.button_doRename.Enabled = p;
+            this.button_name2.Enabled = p;
             this.textBox_path.Enabled = p;
             //throw new NotImplementedException();
         }
@@ -260,6 +262,39 @@ namespace WindowsFormsApplication2
                 //}
                 //MessageBox.Show(aaa);
             }
+        }
+
+        private void button_name2_Click(object sender, EventArgs e)
+        {
+            this.toolStripProgressBar1.Value = 0;
+            DirectoryInfo dInfo = new DirectoryInfo(this.textBox_path.Text);
+            if (!panel_regex.Visible)
+            {
+                names = new Names(dInfo,false);
+            }
+            else
+            {
+                names = new Names(dInfo, textBox_video_left.Text, textBox_video_right.Text, textBox_sub_left.Text, textBox_sub_right.Text);
+            }
+            names.setTreeView(this.treeView1);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (NumberResolver.Reslove(names))
+            {
+                names.reslovered = true;
+                names.setTreeView(this.treeView1);
+            }
+            else
+            {
+                MessageBox.Show("分析失败，不要问为什么，就是失败了");
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

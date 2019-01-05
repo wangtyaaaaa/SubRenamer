@@ -6,9 +6,20 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication2
 {
+    class video
+    {
+        public FileInfo file;
+        public string num;
+
+        public video(FileInfo file)
+        {
+            this.file = file;
+        }
+    }
     class Names
     {
         public bool isRegex { get; }
+        public bool reslovered { get; set; }
 
         String path;
 
@@ -17,7 +28,8 @@ namespace WindowsFormsApplication2
         public string s_left { get; }
         public string s_right { get; }
 
-        public LinkedList<FileInfo> videos = new LinkedList<FileInfo>();
+        public LinkedList<video> videos = new LinkedList<video>();
+        
         public LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
         //LinkedList<DirectoryInfo> directories = new LinkedList<DirectoryInfo>();
         public LinkedList<Names> names = new LinkedList<Names>();
@@ -26,11 +38,11 @@ namespace WindowsFormsApplication2
         //private string s_left;
         //private string s_right;
 
-        public Names(DirectoryInfo dInfo)
+        public Names(DirectoryInfo dInfo,bool recursion)
         {
             isRegex = false;
             this.path = dInfo.Name;
-            setNames(dInfo);
+            setNames(dInfo,recursion);
         }
 
         public Names(DirectoryInfo dInfo, string v_left, string v_right, string s_left, string s_right)
@@ -60,7 +72,7 @@ namespace WindowsFormsApplication2
                     string name = item.Name;
                     if (Regex.IsMatch(item.Name, v_patt))
                     {
-                        this.videos.AddLast(item);
+                        this.videos.AddLast(new video(item));
                        // Regex.Replace(name, "(" + v_left + ")|(" + v_right + ")", "");
                     }
                     else if (Regex.IsMatch(item.Name, s_patt))
@@ -87,7 +99,7 @@ namespace WindowsFormsApplication2
             return "(" + v_left + ")|(" + v_right + ")";
         }
 
-        private void setNames(DirectoryInfo dInfo)
+        private void setNames(DirectoryInfo dInfo,bool recursion)
         {
             if (dInfo.Exists)
             {
@@ -95,18 +107,20 @@ namespace WindowsFormsApplication2
                 {
                     if (isVideo(item))
                     {
-                        this.videos.AddLast(item);
+                        this.videos.AddLast(new video(item));
                     }
                     else if (isSub(item))
                     {
                         this.subs.AddLast(item);
                     }
                 }
-
-                foreach (var dir in dInfo.GetDirectories())
+                if (recursion)
                 {
-                    Names name = new Names(dir);
-                    this.names.AddLast(name);
+                    foreach (var dir in dInfo.GetDirectories())
+                    {
+                        Names name = new Names(dir,true);
+                        this.names.AddLast(name);
+                    }
                 }
             }
         }
@@ -170,16 +184,39 @@ namespace WindowsFormsApplication2
         private LinkedList<string> getVideoStringList()
         {
             LinkedList<string> result = new LinkedList<string>();
+            //string[] strs = getStrArray(videos);
+
+            //for(int i = 0; i < strs.Length; i++)
+            //{
+            //    if (this.isRegex)
+            //    {
+            //        string str = Regex.Replace(strs[i], getVideoReplasePattern(), "");
+            //        result.AddLast(strs[i] + "  ---(" + str + ")");
+            //    }
+            //    else if (reslovered)
+            //    {
+            //        result.AddLast(strs[i] + "  ---(" + videos_num[i] + ")"); 
+            //    }
+            //    else
+            //    {
+            //        result.AddLast(strs[i]);
+            //    }
+            //}
+
             foreach (var video in videos)
             {
                 if (this.isRegex)
                 {
-                    string str = Regex.Replace(video.Name, getVideoReplasePattern(), "");
-                    result.AddLast(video.Name + "  ---(" + str + ")");
+                    string str = Regex.Replace(video.file.Name, getVideoReplasePattern(), "");
+                    result.AddLast(video.file.Name + "  ---(" + str + ")");
+                }
+                else if (reslovered)
+                {
+                    result.AddLast(video.file.Name + "  ---(" + video.num + ")");
                 }
                 else
                 {
-                    result.AddLast(video.Name);
+                    result.AddLast(video.file.Name);
                 }
             }
             return result;
@@ -239,5 +276,33 @@ namespace WindowsFormsApplication2
             }
             return count;
         }
+
+        public LinkedList<FileInfo> getVideoFileList()
+        {
+            LinkedList<FileInfo> res = new LinkedList<FileInfo>();
+            foreach(var v in this.videos)
+            {
+                res.AddLast(v.file);
+            }
+            return res;
+        }
+
+        public static string[] getStrArray(LinkedList<video> list)
+        {
+            string[] res = new string[list.Count];
+            LinkedListNode<video> node = list.First;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                res[i] = node.Value.file.Name;
+                node = node.Next;
+            }
+
+
+            return res;
+        }
+
     }
+
+
 }
