@@ -1,10 +1,12 @@
 ﻿using SubRenamer;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication2
+namespace SubRenamer
 {
     public partial class Form1 : Form
     {
@@ -19,7 +21,7 @@ namespace WindowsFormsApplication2
         /// <summary>
         /// 是否确认过提示信息
         /// </summary>
-        bool ischecked = false;
+        internal bool ischecked = false;
         /// <summary>
         /// lable "集号" 的宽度，在Form1初始化时获取
         /// </summary>
@@ -31,7 +33,7 @@ namespace WindowsFormsApplication2
         {
             InitializeComponent();
             this.textBox_path.Text = System.Environment.CurrentDirectory;
-            //this.textBox_path.Text = "D:\\aaa\\aaa";
+            //this.textBox_path.Text = "D:\\aaa\\aaa\\aab";
             setPanelRegexVisible(false);
             lable_num_width = label_video_num.Width ;
         }
@@ -75,7 +77,7 @@ namespace WindowsFormsApplication2
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button_name_Click(object sender, EventArgs e)
+        internal void button_name_Click(object sender, EventArgs e)
         {
             this.toolStripProgressBar1.Value = 0;
             DirectoryInfo dInfo = new DirectoryInfo(this.textBox_path.Text);
@@ -87,7 +89,7 @@ namespace WindowsFormsApplication2
             {
                 names = new Names(dInfo, textBox_video_left.Text, textBox_video_right.Text, textBox_sub_left.Text, textBox_sub_right.Text);
             }
-            names.setTreeView(this.treeView1);
+            setTreeView(this.treeView1,names);
 
         }
         /// <summary>
@@ -102,13 +104,13 @@ namespace WindowsFormsApplication2
                 MessageBox.Show("请先获取文件");
                 return;
             }
-            if (!ischecked)
-            {
-                if (!DoCheckMessage())
-                {
-                    return;
-                }
-            }
+            //if (!ischecked)
+            //{
+            //    if (!DoCheckMessage())
+            //    {
+            //        return;
+            //    }
+            //}
             DoRename();
         }
 
@@ -161,7 +163,7 @@ namespace WindowsFormsApplication2
         private void setClickable(bool p)
         {
             this.button_path.Enabled = p;
-            this.button_name.Enabled = p;
+           // this.button_name.Enabled = p;
             this.button_doRename.Enabled = p;
             this.button_name2.Enabled = p;
             this.textBox_path.Enabled = p;
@@ -170,7 +172,7 @@ namespace WindowsFormsApplication2
 
 
 
-        private bool DoCheckMessage()
+        internal bool DoCheckMessage()
         {
             MessageBoxButtons messButton = MessageBoxButtons.OKCancel;
             DialogResult dr = MessageBox.Show("执行前请先备份字幕文件，以免识别错误导致字幕文件混乱\n本消息只提示一次", "确认信息", messButton);
@@ -266,17 +268,18 @@ namespace WindowsFormsApplication2
 
         private void button_name2_Click(object sender, EventArgs e)
         {
+            bool recursion = checkBox_recursion.Checked;
             this.toolStripProgressBar1.Value = 0;
             DirectoryInfo dInfo = new DirectoryInfo(this.textBox_path.Text);
             if (!panel_regex.Visible)
             {
-                names = new Names(dInfo,false);
+                names = new Names(dInfo, recursion);
             }
             else
             {
                 names = new Names(dInfo, textBox_video_left.Text, textBox_video_right.Text, textBox_sub_left.Text, textBox_sub_right.Text);
             }
-            names.setTreeView(this.treeView1);
+            setTreeView(this.treeView1,names);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -284,7 +287,7 @@ namespace WindowsFormsApplication2
             if (NumberResolver.Reslove(names))
             {
                 names.reslovered = true;
-                names.setTreeView(this.treeView1);
+                setTreeView(this.treeView1,names);
             }
             else
             {
@@ -295,6 +298,130 @@ namespace WindowsFormsApplication2
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            Form2 fm2 = new Form2();
+            fm2.setNames(names, this);
+            this.Hide();
+            fm2.Show();
+        }
+
+
+        internal void setTreeView(System.Windows.Forms.TreeView treeView,Names names)
+        {
+            treeView.Nodes.Clear();
+            TreeNode node = getNodeByNames(names);
+            treeView.Nodes.Add(node);
+            node.Expand();
+        }
+
+
+        private TreeNode getNodeByNames(Names names)
+        {
+            TreeNode root = new TreeNode(names.path);
+
+            TreeNode videos = new TreeNode("videos");
+            LinkedList<string> video_nodes = getVideoStringList(names);
+            addNodes(videos, video_nodes);
+            root.Nodes.Add(videos);
+
+            TreeNode subs = new TreeNode("subs");
+            LinkedList<string> sub_nodes = getSubStringList(names);
+            addNodes(subs, sub_nodes);
+            root.Nodes.Add(subs);
+
+
+            TreeNode directories = new TreeNode("directories");
+            addNodes(directories, names.names);
+            root.Nodes.Add(directories);
+            return root;
+        }
+
+        private LinkedList<string> getVideoStringList(Names names)
+        {
+            LinkedList<string> result = new LinkedList<string>();
+            //string[] strs = getStrArray(videos);
+
+            //for(int i = 0; i < strs.Length; i++)
+            //{
+            //    if (this.isRegex)
+            //    {
+            //        string str = Regex.Replace(strs[i], getVideoReplasePattern(), "");
+            //        result.AddLast(strs[i] + "  ---(" + str + ")");
+            //    }
+            //    else if (reslovered)
+            //    {
+            //        result.AddLast(strs[i] + "  ---(" + videos_num[i] + ")"); 
+            //    }
+            //    else
+            //    {
+            //        result.AddLast(strs[i]);
+            //    }
+            //}
+
+            foreach (var video in names.videos)
+            {
+                if (names.isRegex)
+                {
+                    string str = Regex.Replace(video.file.Name, names.getVideoReplasePattern(), "");
+                    result.AddLast(video.file.Name + "  ---(" + str + ")");
+                }
+                else if (names.reslovered)
+                {
+                    result.AddLast(video.file.Name + "  ---(" + video.num + ")");
+                }
+                else
+                {
+                    result.AddLast(video.file.Name);
+                }
+            }
+            return result;
+        }
+
+
+        private LinkedList<string> getSubStringList(Names names)
+        {
+            LinkedList<string> result = new LinkedList<string>();
+            foreach (var sub in names.subs)
+            {
+                if (names.isRegex)
+                {
+                    string str = Regex.Replace(sub.Name, names.getSubReplasePattern(), "");
+                    result.AddLast(sub.Name + "  ---(" + str + ")");
+                }
+                else
+                {
+                    result.AddLast(sub.Name);
+                }
+            }
+            return result;
+        }
+
+        private void addNodes(TreeNode directories, LinkedList<Names> names)
+        {
+            foreach (var name in names)
+            {
+                TreeNode node = getNodeByNames(name);
+                directories.Nodes.Add(node);
+            }
+        }
+
+        private void addNodes(TreeNode videos, LinkedList<string> list)
+        {
+            foreach (var item in list)
+            {
+                videos.Nodes.Add(item);
+            }
+        }
+
+        private void addNodes(TreeNode videos, LinkedList<FileInfo> list)
+        {
+            foreach (var item in list)
+            {
+                videos.Nodes.Add(item.Name);
+            }
         }
     }
 }

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WindowsFormsApplication2;
 
 namespace SubRenamer
 {
@@ -15,8 +14,8 @@ namespace SubRenamer
         public static bool Reslove(Names names)
         {
             //int idx1,idx2 = 0;
-            string[] video_num = Names.getStrArray(names.videos);
-            string[] strs = Names.getStrArray(names.videos);
+            string[] video_num = Names.GetStrArray(names.videos);
+            string[] strs = Names.GetStrArray(names.videos);
             int len = strs[0].Length;
             int i = 0;
             for (;i<len;i++)            //检查第一个不一样的字符

@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication2
+namespace SubRenamer
 {
     class video
     {
@@ -21,7 +21,7 @@ namespace WindowsFormsApplication2
         public bool isRegex { get; }
         public bool reslovered { get; set; }
 
-        String path;
+        public String path;
 
         public string v_left { get; }
         public string v_right { get; }
@@ -151,120 +151,19 @@ namespace WindowsFormsApplication2
         }
 
 
-        internal void setTreeView(System.Windows.Forms.TreeView treeView)
-        {
-            treeView.Nodes.Clear();
-            TreeNode node = getNodeByNames(this);
-            treeView.Nodes.Add(node);
-            node.Expand();
-        }
-
-        private TreeNode getNodeByNames(Names names)
-        {
-            TreeNode root = new TreeNode(names.path);
-
-            TreeNode videos = new TreeNode("videos");
-            LinkedList<string> video_nodes = getVideoStringList();
-            addNodes(videos, video_nodes);
-            root.Nodes.Add(videos);
-
-            TreeNode subs = new TreeNode("subs");
-            LinkedList<string> sub_nodes = getSubStringList();
-            addNodes(subs, sub_nodes);
-            root.Nodes.Add(subs);
 
 
-            TreeNode directories = new TreeNode("directories");
-            addNodes(directories, names.names);
-            root.Nodes.Add(directories);
-            return root;
-        }
+       
 
 
-        private LinkedList<string> getVideoStringList()
-        {
-            LinkedList<string> result = new LinkedList<string>();
-            //string[] strs = getStrArray(videos);
+       
 
-            //for(int i = 0; i < strs.Length; i++)
-            //{
-            //    if (this.isRegex)
-            //    {
-            //        string str = Regex.Replace(strs[i], getVideoReplasePattern(), "");
-            //        result.AddLast(strs[i] + "  ---(" + str + ")");
-            //    }
-            //    else if (reslovered)
-            //    {
-            //        result.AddLast(strs[i] + "  ---(" + videos_num[i] + ")"); 
-            //    }
-            //    else
-            //    {
-            //        result.AddLast(strs[i]);
-            //    }
-            //}
-
-            foreach (var video in videos)
-            {
-                if (this.isRegex)
-                {
-                    string str = Regex.Replace(video.file.Name, getVideoReplasePattern(), "");
-                    result.AddLast(video.file.Name + "  ---(" + str + ")");
-                }
-                else if (reslovered)
-                {
-                    result.AddLast(video.file.Name + "  ---(" + video.num + ")");
-                }
-                else
-                {
-                    result.AddLast(video.file.Name);
-                }
-            }
-            return result;
-        }
-
-        private LinkedList<string> getSubStringList()
-        {
-            LinkedList<string> result = new LinkedList<string>();
-            foreach (var sub in subs)
-            {
-                if (this.isRegex)
-                {
-                    string str = Regex.Replace(sub.Name, getSubReplasePattern(), "");
-                    result.AddLast(sub.Name + "  ---(" + str + ")");
-                }
-                else
-                {
-                    result.AddLast(sub.Name);
-                }
-            }
-            return result;
-        }
-
-        private void addNodes(TreeNode directories, LinkedList<Names> names)
-        {
-            foreach (var name in names)
-            {
-                TreeNode node = getNodeByNames(name);
-                directories.Nodes.Add(node);
-            }
-        }
+      
 
 
-        private void addNodes(TreeNode videos, LinkedList<string> list)
-        {
-            foreach (var item in list)
-            {
-                videos.Nodes.Add(item);
-            }
-        }
 
-        private void addNodes(TreeNode videos, LinkedList<FileInfo> list)
-        {
-            foreach (var item in list)
-            {
-                videos.Nodes.Add(item.Name);
-            }
-        }
+
+     
 
 
         internal int getVideoCount()
@@ -287,7 +186,7 @@ namespace WindowsFormsApplication2
             return res;
         }
 
-        public static string[] getStrArray(LinkedList<video> list)
+        public static string[] GetStrArray(LinkedList<video> list)
         {
             string[] res = new string[list.Count];
             LinkedListNode<video> node = list.First;

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 
-namespace WindowsFormsApplication2
+namespace SubRenamer
 {
     class Renamer
     {
@@ -21,7 +21,10 @@ namespace WindowsFormsApplication2
             {
                 Rename_Reslobered(names, bkWorker);
             }
-            Rename(names, bkWorker, 0);
+            else
+            {
+                Rename(names, bkWorker, 0);
+            }
         }
 
         private static void Rename_Reslobered(Names names, BackgroundWorker bkWorker)
@@ -85,7 +88,7 @@ namespace WindowsFormsApplication2
             }
         }
 
-        private static void renameSubs(FileInfo video, LinkedList<FileInfo> subs)
+        internal static void renameSubs(FileInfo video, LinkedList<FileInfo> subs)
         {
             string vname = getFullNameWithOutExtension(video);
             foreach (var sub in subs)
@@ -103,7 +106,7 @@ namespace WindowsFormsApplication2
         }
 
 
-        private static Dictionary<FileInfo, string> getDic(LinkedList<FileInfo> videos, string p)
+        internal static Dictionary<FileInfo, string> getDic(LinkedList<FileInfo> videos, string p)
         {
             Dictionary<FileInfo, string> dic = new Dictionary<FileInfo, string>();
             foreach (var video in videos)
@@ -161,7 +164,7 @@ namespace WindowsFormsApplication2
             return sub.Extension;
         }
 
-        private static LinkedList<FileInfo> getSubList(Names names, string num)
+        internal static LinkedList<FileInfo> getSubList(Names names, string num)
         {
             LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
             foreach (var sub in names.subs)
@@ -174,7 +177,7 @@ namespace WindowsFormsApplication2
             return subs;
         }
 
-        private static LinkedList<FileInfo> getSubList(Dictionary<FileInfo, string> subDic, string key)
+        internal static LinkedList<FileInfo> getSubList(Dictionary<FileInfo, string> subDic, string key)
         {
             LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
             foreach (var sub in subDic.Keys)
@@ -254,7 +257,7 @@ namespace WindowsFormsApplication2
             return false;
         }
 
-        private static string getVideoNumber(System.IO.FileInfo video)
+        internal static string getVideoNumber(System.IO.FileInfo video)
         {
             String name = (String)video.Name.Clone();
             name = name.Replace(video.Extension, "");
