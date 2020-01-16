@@ -280,6 +280,7 @@ namespace SubRenamer
                 names = new Names(dInfo, textBox_video_left.Text, textBox_video_right.Text, textBox_sub_left.Text, textBox_sub_right.Text);
             }
             setTreeView(this.treeView1,names);
+            button2_Click_1(sender,e);
         }
 
         private void button2_Click(object sender, EventArgs e)
