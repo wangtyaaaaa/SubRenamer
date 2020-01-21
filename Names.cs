@@ -38,6 +38,13 @@ namespace SubRenamer
         //private string s_left;
         //private string s_right;
 
+        public Names(DirectoryInfo dInfo)
+        {
+            isRegex = false;
+            this.path = dInfo.Name;
+            setNames(dInfo, false);
+        }
+
         public Names(DirectoryInfo dInfo,bool recursion)
         {
             isRegex = false;

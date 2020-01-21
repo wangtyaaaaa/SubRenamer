@@ -30,15 +30,14 @@
         {
             this.textBox_path = new System.Windows.Forms.TextBox();
             this.button_path = new System.Windows.Forms.Button();
-            this.treeView1 = new System.Windows.Forms.TreeView();
             this.button_doRename = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel_root = new System.Windows.Forms.Panel();
             this.panel_regex = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button_autotransfer = new System.Windows.Forms.Button();
             this.groupBox_sub = new System.Windows.Forms.GroupBox();
             this.textBox_sub_right = new System.Windows.Forms.TextBox();
             this.label_sub_num = new System.Windows.Forms.Label();
@@ -48,14 +47,15 @@
             this.label_video_num = new System.Windows.Forms.Label();
             this.textBox_video_left = new System.Windows.Forms.TextBox();
             this.panel_name = new System.Windows.Forms.Panel();
-            this.button_manual = new System.Windows.Forms.Button();
-            this.checkBox_recursion = new System.Windows.Forms.CheckBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.button_redo = new System.Windows.Forms.Button();
             this.button_resolve = new System.Windows.Forms.Button();
             this.button_name2 = new System.Windows.Forms.Button();
             this.button_regex_panel = new System.Windows.Forms.Button();
+            this.treeView1 = new System.Windows.Forms.TreeView();
             this.panel_path = new System.Windows.Forms.Panel();
             this.statusStrip1.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.panel_root.SuspendLayout();
             this.panel_regex.SuspendLayout();
             this.groupBox_sub.SuspendLayout();
             this.groupBox_video.SuspendLayout();
@@ -69,13 +69,13 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_path.Location = new System.Drawing.Point(6, 6);
             this.textBox_path.Name = "textBox_path";
-            this.textBox_path.Size = new System.Drawing.Size(389, 21);
+            this.textBox_path.Size = new System.Drawing.Size(387, 21);
             this.textBox_path.TabIndex = 0;
             // 
             // button_path
             // 
             this.button_path.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_path.Location = new System.Drawing.Point(401, 5);
+            this.button_path.Location = new System.Drawing.Point(399, 5);
             this.button_path.Name = "button_path";
             this.button_path.Size = new System.Drawing.Size(75, 23);
             this.button_path.TabIndex = 1;
@@ -83,19 +83,9 @@
             this.button_path.UseVisualStyleBackColor = true;
             this.button_path.Click += new System.EventHandler(this.button_path_Click);
             // 
-            // treeView1
-            // 
-            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView1.Location = new System.Drawing.Point(6, 33);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(470, 198);
-            this.treeView1.TabIndex = 3;
-            // 
             // button_doRename
             // 
-            this.button_doRename.Location = new System.Drawing.Point(166, 6);
+            this.button_doRename.Location = new System.Drawing.Point(88, 6);
             this.button_doRename.Name = "button_doRename";
             this.button_doRename.Size = new System.Drawing.Size(115, 23);
             this.button_doRename.TabIndex = 4;
@@ -103,15 +93,22 @@
             this.button_doRename.UseVisualStyleBackColor = true;
             this.button_doRename.Click += new System.EventHandler(this.button_doRename_Click);
             // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorker1_RunWorkerCompleted);
+            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripProgressBar1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 419);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 454);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.ShowItemToolTips = true;
-            this.statusStrip1.Size = new System.Drawing.Size(494, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(492, 22);
             this.statusStrip1.TabIndex = 5;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -122,7 +119,8 @@
             this.toolStripStatusLabel1.IsLink = true;
             this.toolStripStatusLabel1.Margin = new System.Windows.Forms.Padding(11, 3, 0, 2);
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(366, 17);
+            this.toolStripStatusLabel1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(364, 17);
             this.toolStripStatusLabel1.Spring = true;
             this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -133,40 +131,40 @@
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
             this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 16);
             // 
-            // panel1
+            // panel_root
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.panel_root.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.Controls.Add(this.panel_regex);
-            this.panel1.Controls.Add(this.panel_name);
-            this.panel1.Controls.Add(this.panel_path);
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(494, 441);
-            this.panel1.TabIndex = 6;
+            this.panel_root.Controls.Add(this.panel_regex);
+            this.panel_root.Controls.Add(this.panel_name);
+            this.panel_root.Controls.Add(this.panel_path);
+            this.panel_root.Location = new System.Drawing.Point(0, 0);
+            this.panel_root.Name = "panel_root";
+            this.panel_root.Size = new System.Drawing.Size(492, 476);
+            this.panel_root.TabIndex = 6;
             // 
             // panel_regex
             // 
             this.panel_regex.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel_regex.Controls.Add(this.button1);
+            this.panel_regex.Controls.Add(this.button_autotransfer);
             this.panel_regex.Controls.Add(this.groupBox_sub);
             this.panel_regex.Controls.Add(this.groupBox_video);
             this.panel_regex.Location = new System.Drawing.Point(6, 46);
             this.panel_regex.Name = "panel_regex";
-            this.panel_regex.Size = new System.Drawing.Size(482, 130);
+            this.panel_regex.Size = new System.Drawing.Size(480, 130);
             this.panel_regex.TabIndex = 6;
             // 
-            // button1
+            // button_autotransfer
             // 
-            this.button1.Location = new System.Drawing.Point(7, 104);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(103, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "自动转义";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button_autotransfer.Location = new System.Drawing.Point(7, 104);
+            this.button_autotransfer.Name = "button_autotransfer";
+            this.button_autotransfer.Size = new System.Drawing.Size(103, 23);
+            this.button_autotransfer.TabIndex = 2;
+            this.button_autotransfer.Text = "自动转义";
+            this.button_autotransfer.UseVisualStyleBackColor = true;
+            this.button_autotransfer.Click += new System.EventHandler(this.button_autotransfer_Click);
             // 
             // groupBox_sub
             // 
@@ -178,7 +176,7 @@
             this.groupBox_sub.Location = new System.Drawing.Point(0, 50);
             this.groupBox_sub.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox_sub.Name = "groupBox_sub";
-            this.groupBox_sub.Size = new System.Drawing.Size(482, 50);
+            this.groupBox_sub.Size = new System.Drawing.Size(480, 50);
             this.groupBox_sub.TabIndex = 1;
             this.groupBox_sub.TabStop = false;
             this.groupBox_sub.Text = "字幕";
@@ -186,7 +184,7 @@
             // textBox_sub_right
             // 
             this.textBox_sub_right.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_sub_right.Location = new System.Drawing.Point(315, 21);
+            this.textBox_sub_right.Location = new System.Drawing.Point(313, 21);
             this.textBox_sub_right.Name = "textBox_sub_right";
             this.textBox_sub_right.Size = new System.Drawing.Size(161, 21);
             this.textBox_sub_right.TabIndex = 5;
@@ -195,7 +193,7 @@
             // 
             this.label_sub_num.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.label_sub_num.AutoSize = true;
-            this.label_sub_num.Location = new System.Drawing.Point(227, 24);
+            this.label_sub_num.Location = new System.Drawing.Point(226, 24);
             this.label_sub_num.Name = "label_sub_num";
             this.label_sub_num.Size = new System.Drawing.Size(29, 12);
             this.label_sub_num.TabIndex = 4;
@@ -218,7 +216,7 @@
             this.groupBox_video.Location = new System.Drawing.Point(0, 0);
             this.groupBox_video.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox_video.Name = "groupBox_video";
-            this.groupBox_video.Size = new System.Drawing.Size(482, 50);
+            this.groupBox_video.Size = new System.Drawing.Size(480, 50);
             this.groupBox_video.TabIndex = 0;
             this.groupBox_video.TabStop = false;
             this.groupBox_video.Text = "视频";
@@ -226,7 +224,7 @@
             // textBox_video_right
             // 
             this.textBox_video_right.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_video_right.Location = new System.Drawing.Point(315, 21);
+            this.textBox_video_right.Location = new System.Drawing.Point(313, 21);
             this.textBox_video_right.Name = "textBox_video_right";
             this.textBox_video_right.Size = new System.Drawing.Size(161, 21);
             this.textBox_video_right.TabIndex = 2;
@@ -235,7 +233,7 @@
             // 
             this.label_video_num.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.label_video_num.AutoSize = true;
-            this.label_video_num.Location = new System.Drawing.Point(227, 24);
+            this.label_video_num.Location = new System.Drawing.Point(226, 24);
             this.label_video_num.Name = "label_video_num";
             this.label_video_num.Size = new System.Drawing.Size(29, 12);
             this.label_video_num.TabIndex = 1;
@@ -253,8 +251,8 @@
             this.panel_name.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel_name.Controls.Add(this.button_manual);
-            this.panel_name.Controls.Add(this.checkBox_recursion);
+            this.panel_name.Controls.Add(this.panel1);
+            this.panel_name.Controls.Add(this.button_redo);
             this.panel_name.Controls.Add(this.button_resolve);
             this.panel_name.Controls.Add(this.button_name2);
             this.panel_name.Controls.Add(this.button_regex_panel);
@@ -262,34 +260,36 @@
             this.panel_name.Controls.Add(this.button_doRename);
             this.panel_name.Location = new System.Drawing.Point(6, 182);
             this.panel_name.Name = "panel_name";
-            this.panel_name.Size = new System.Drawing.Size(482, 234);
+            this.panel_name.Size = new System.Drawing.Size(480, 269);
             this.panel_name.TabIndex = 5;
             // 
-            // button_manual
+            // panel1
             // 
-            this.button_manual.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_manual.Location = new System.Drawing.Point(291, 6);
-            this.button_manual.Name = "button_manual";
-            this.button_manual.Size = new System.Drawing.Size(75, 23);
-            this.button_manual.TabIndex = 9;
-            this.button_manual.Text = "手动选择";
-            this.button_manual.UseVisualStyleBackColor = true;
-            this.button_manual.Click += new System.EventHandler(this.button2_Click_1);
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.AutoScroll = true;
+            this.panel1.BackColor = System.Drawing.SystemColors.Window;
+            this.panel1.Location = new System.Drawing.Point(6, 33);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(468, 233);
+            this.panel1.TabIndex = 10;
             // 
-            // checkBox_recursion
+            // button_redo
             // 
-            this.checkBox_recursion.AutoSize = true;
-            this.checkBox_recursion.Location = new System.Drawing.Point(88, 10);
-            this.checkBox_recursion.Name = "checkBox_recursion";
-            this.checkBox_recursion.Size = new System.Drawing.Size(72, 16);
-            this.checkBox_recursion.TabIndex = 8;
-            this.checkBox_recursion.Text = "递归获取";
-            this.checkBox_recursion.UseVisualStyleBackColor = true;
+            this.button_redo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_redo.Location = new System.Drawing.Point(289, 6);
+            this.button_redo.Name = "button_redo";
+            this.button_redo.Size = new System.Drawing.Size(75, 23);
+            this.button_redo.TabIndex = 9;
+            this.button_redo.Text = "撤销";
+            this.button_redo.UseVisualStyleBackColor = true;
+            this.button_redo.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // button_resolve
             // 
             this.button_resolve.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_resolve.Location = new System.Drawing.Point(372, 6);
+            this.button_resolve.Location = new System.Drawing.Point(370, 6);
             this.button_resolve.Name = "button_resolve";
             this.button_resolve.Size = new System.Drawing.Size(75, 23);
             this.button_resolve.TabIndex = 7;
@@ -310,13 +310,23 @@
             // button_regex_panel
             // 
             this.button_regex_panel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_regex_panel.Location = new System.Drawing.Point(453, 6);
+            this.button_regex_panel.Location = new System.Drawing.Point(451, 6);
             this.button_regex_panel.Name = "button_regex_panel";
             this.button_regex_panel.Size = new System.Drawing.Size(23, 23);
             this.button_regex_panel.TabIndex = 5;
             this.button_regex_panel.Text = "↓";
             this.button_regex_panel.UseVisualStyleBackColor = true;
             this.button_regex_panel.Click += new System.EventHandler(this.button_regex_panel_Click_1);
+            // 
+            // treeView1
+            // 
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView1.Location = new System.Drawing.Point(6, 33);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(468, 233);
+            this.treeView1.TabIndex = 3;
             // 
             // panel_path
             // 
@@ -326,7 +336,7 @@
             this.panel_path.Controls.Add(this.textBox_path);
             this.panel_path.Location = new System.Drawing.Point(6, 6);
             this.panel_path.Name = "panel_path";
-            this.panel_path.Size = new System.Drawing.Size(482, 33);
+            this.panel_path.Size = new System.Drawing.Size(480, 33);
             this.panel_path.TabIndex = 2;
             // 
             // Form1
@@ -334,25 +344,23 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(494, 441);
+            this.ClientSize = new System.Drawing.Size(492, 476);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.panel1);
-            this.MaximizeBox = false;
+            this.Controls.Add(this.panel_root);
+            this.MinimumSize = new System.Drawing.Size(508, 515);
             this.Name = "Form1";
             this.ShowIcon = false;
             this.Text = "SubRenamer";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            this.panel1.ResumeLayout(false);
+            this.panel_root.ResumeLayout(false);
             this.panel_regex.ResumeLayout(false);
             this.groupBox_sub.ResumeLayout(false);
             this.groupBox_sub.PerformLayout();
             this.groupBox_video.ResumeLayout(false);
             this.groupBox_video.PerformLayout();
             this.panel_name.ResumeLayout(false);
-            this.panel_name.PerformLayout();
             this.panel_path.ResumeLayout(false);
             this.panel_path.PerformLayout();
             this.ResumeLayout(false);
@@ -364,13 +372,12 @@
 
         private System.Windows.Forms.TextBox textBox_path;
         private System.Windows.Forms.Button button_path;
-        private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.Button button_doRename;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel_root;
         private System.Windows.Forms.Panel panel_path;
         private System.Windows.Forms.Panel panel_name;
         private System.Windows.Forms.Panel panel_regex;
@@ -383,11 +390,12 @@
         private System.Windows.Forms.TextBox textBox_video_right;
         private System.Windows.Forms.Label label_video_num;
         private System.Windows.Forms.Button button_regex_panel;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_autotransfer;
         private System.Windows.Forms.Button button_name2;
         private System.Windows.Forms.Button button_resolve;
-        private System.Windows.Forms.CheckBox checkBox_recursion;
-        private System.Windows.Forms.Button button_manual;
+        private System.Windows.Forms.Button button_redo;
+        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.Panel panel1;
     }
 }
 

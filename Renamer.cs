@@ -12,6 +12,7 @@ namespace SubRenamer
         private static String regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
        // private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
         private static String regex_headAndTail = "第|話|话|集";
+        private static Dictionary<string, string> redo = new Dictionary<string, string>();
         public static void Rename(Names names, BackgroundWorker bkWorker)
         {
             if (names.isRegex)
@@ -96,15 +97,62 @@ namespace SubRenamer
                 string ext = getFullExtension(sub);
                 try
                 {
-                    sub.MoveTo(vname + ext);
+                    string new_name = vname + ext;
+                    setRedoDic(sub.FullName, new_name);
+                    sub.MoveTo(new_name);
                 }
                 catch
                 {
-                    sub.MoveTo(vname + "." + sub.Name);
+                    string new_name = vname + "." + sub.Name;
+                    setRedoDic(sub.FullName, new_name);
+                    sub.MoveTo(new_name);
                 }
             }
         }
 
+        private static void setRedoDic(string oldname, string newname)
+        {
+            if (redo.ContainsKey(oldname)) redo.Remove(oldname);
+            redo.Add(oldname, newname);
+        }
+
+        public static void clearRedoDic()
+        {
+            redo.Clear();
+        }
+
+        public static bool Redo()
+        {
+            Dictionary<string, string>.Enumerator e = redo.GetEnumerator();
+            while (e.MoveNext())
+            {
+                string old = e.Current.Key;
+                FileInfo newfile = new FileInfo(e.Current.Value);
+                if (newfile.Exists)
+                {
+                    try
+                    {
+                        newfile.MoveTo(old);
+                    }
+                    catch
+                    {
+                        clearRedoDic();
+                        return false;
+                    }
+                }
+            }
+            clearRedoDic();
+            return true;
+        }
+
+        public static bool isRedoAvailable()
+        {
+            if (redo.Count == 0)
+            {
+                return false;
+            }
+            return true;
+        }
 
         internal static Dictionary<FileInfo, string> getDic(LinkedList<FileInfo> videos, string p)
         {
