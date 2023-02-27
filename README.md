@@ -30,3 +30,8 @@ Windows Registry Editor Version 5.00
 
 *注：
   使用之前一定要备份好字幕文件，防止工具给改乱了
+
+
+License
+------------------------------------------------------------
+NO licesnse , every one can use it in any way
