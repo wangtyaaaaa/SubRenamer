@@ -6,30 +6,79 @@ using System.Windows.Forms;
 
 namespace SubRenamer
 {
-    class video
+    internal class Extentions
+    {
+        public const int VIDEO = 1;
+        public const int SUB = 2;
+        public static string[] video_ext = { "mp4", "mkv" };
+        public static string[] sub_ext = { "ass", "ssa", "sub" };
+
+        public static string GetExts(int type)
+        {
+            string[] strs;
+            switch (type)
+            {
+                case VIDEO:
+                    strs = video_ext;
+                    break;
+                case SUB:
+                    strs = sub_ext;
+                    break;
+                default:
+                    return null;
+            }
+            string result = null;
+            foreach (string ext in strs)
+            {
+                result = result == null ? ext : result + "," + ext;
+            }
+            return result;
+        }
+
+        public static void SetExts(string exts, int type)
+        {
+            string[] strs = exts.Split(',');
+            switch (type)
+            {
+                case VIDEO:
+                    video_ext = strs;
+                    break;
+                case SUB:
+                    sub_ext = strs;
+                    break;
+                default:
+                    return;
+            }
+        }
+    }
+
+    internal class Video
     {
         public FileInfo file;
         public string num;
 
-        public video(FileInfo file)
+        public Video(FileInfo file)
         {
             this.file = file;
         }
     }
-    class Names
+
+    internal class Names
     {
-        public bool isRegex { get; }
-        public bool reslovered { get; set; }
+        public bool IsRegex { get; }
+        public bool Reslovered { get; set; }
 
-        public String path;
+        public string path;
 
-        public string v_left { get; }
-        public string v_right { get; }
-        public string s_left { get; }
-        public string s_right { get; }
 
-        public LinkedList<video> videos = new LinkedList<video>();
-        
+
+        public string Video_Left { get; }
+        public string Video_Right { get; }
+        public string Sub_Left { get; }
+        public string Sub_Right { get; }
+
+        public LinkedList<Video> videos = new LinkedList<Video>();
+
         public LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
         //LinkedList<DirectoryInfo> directories = new LinkedList<DirectoryInfo>();
         public LinkedList<Names> names = new LinkedList<Names>();
@@ -40,163 +89,142 @@ namespace SubRenamer
 
         public Names(DirectoryInfo dInfo)
         {
-            isRegex = false;
-            this.path = dInfo.Name;
-            setNames(dInfo, false);
+            IsRegex = false;
+            path = dInfo.Name;
+            SetNames(dInfo, false);
         }
 
-        public Names(DirectoryInfo dInfo,bool recursion)
+        public Names(DirectoryInfo dInfo, bool recursion)
         {
-            isRegex = false;
-            this.path = dInfo.Name;
-            setNames(dInfo,recursion);
+            IsRegex = false;
+            path = dInfo.Name;
+            SetNames(dInfo, recursion);
         }
 
         public Names(DirectoryInfo dInfo, string v_left, string v_right, string s_left, string s_right)
         {
-            isRegex = true;
-            this.path = dInfo.Name;
-            this.v_left = v_left;
-            this.v_right = v_right;
-            this.s_left = s_left;
-            this.s_right = s_right;
-            setNames2(dInfo);
+            IsRegex = true;
+            path = dInfo.Name;
+            Video_Left = v_left;
+            Video_Right = v_right;
+            Sub_Left = s_left;
+            Sub_Right = s_right;
+            SetNames2(dInfo);
         }
 
-        private void setNames2(DirectoryInfo dInfo)
+        private void SetNames2(DirectoryInfo dInfo)
         {
             if (dInfo.Exists)
             {
-                string v_patt = "^" + v_left + "\\S{1,6}" + v_right + "$";
-                string s_patt = "^" + s_left + "\\S{1,6}" + s_right + "$";
+                string v_patt = "^" + Video_Left + "\\S{1,6}" + Video_Right + "$";
+                string s_patt = "^" + Sub_Left + "\\S{1,6}" + Sub_Right + "$";
                 //MessageBox.Show("视频：\n"+v_patt + "\n字幕：\n" + s_patt);
                 //Regex regex_v = new Regex(v_patt);
                 //Regex regex_s = new Regex(s_patt);
                 try
                 {
-                foreach (var item in dInfo.GetFiles())
-                {
-                    string name = item.Name;
-                    if (Regex.IsMatch(item.Name, v_patt))
+                    foreach (FileInfo item in dInfo.GetFiles())
                     {
-                        this.videos.AddLast(new video(item));
-                       // Regex.Replace(name, "(" + v_left + ")|(" + v_right + ")", "");
+                        string name = item.Name;
+                        if (Regex.IsMatch(item.Name, v_patt))
+                        {
+                            _ = videos.AddLast(new Video(item));
+                            // Regex.Replace(name, "(" + v_left + ")|(" + v_right + ")", "");
+                        }
+                        else if (Regex.IsMatch(item.Name, s_patt))
+                        {
+                            _ = subs.AddLast(item);
+                        }
                     }
-                    else if (Regex.IsMatch(item.Name, s_patt))
-                    {
-                        this.subs.AddLast(item);
-                    }
-                }
 
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
-                    MessageBox.Show("匹配错误，请检查表达式\n"+e.Message);
+                    _ = MessageBox.Show("匹配错误，请检查表达式\n" + e.Message);
                 }
             }
         }
 
-        internal string getSubReplasePattern()
+        internal string GetSubReplasePattern()
         {
-            return "(" + s_left + ")|(" + s_right + ")";
+            return "(" + Sub_Left + ")|(" + Sub_Right + ")";
         }
 
-        internal string getVideoReplasePattern()
+        internal string GetVideoReplasePattern()
         {
-            return "(" + v_left + ")|(" + v_right + ")";
+            return "(" + Video_Left + ")|(" + Video_Right + ")";
         }
 
-        private void setNames(DirectoryInfo dInfo,bool recursion)
+        private void SetNames(DirectoryInfo dInfo, bool recursion)
         {
             if (dInfo.Exists)
             {
-                foreach (var item in dInfo.GetFiles())
+                foreach (FileInfo item in dInfo.GetFiles())
                 {
-                    if (isVideo(item))
+                    if (IsVideo(item))
                     {
-                        this.videos.AddLast(new video(item));
+                        _ = videos.AddLast(new Video(item));
                     }
-                    else if (isSub(item))
+                    else if (IsSub(item))
                     {
-                        this.subs.AddLast(item);
+                        _ = subs.AddLast(item);
                     }
                 }
                 if (recursion)
                 {
-                    foreach (var dir in dInfo.GetDirectories())
+                    foreach (DirectoryInfo dir in dInfo.GetDirectories())
                     {
-                        Names name = new Names(dir,true);
-                        this.names.AddLast(name);
+                        Names name = new Names(dir, true);
+                        _ = names.AddLast(name);
                     }
                 }
             }
         }
 
-        private bool isSub(FileInfo item)
+        private bool IsSub(FileInfo item)
         {
-            String a = item.Extension.ToLower();
-            if (item.Extension.ToLower() == ".ass" || item.Extension.ToLower() == ".ssa" || item.Extension.ToLower() == "sub")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return MatchExtebsion(item, Extentions.sub_ext);
         }
 
-        private bool isVideo(FileInfo item)
+        private bool IsVideo(FileInfo item)
         {
-            if (item.Extension.ToLower() == ".mp4" || item.Extension.ToLower() == ".mkv")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return MatchExtebsion(item, Extentions.video_ext);
         }
 
 
-
-
-       
-
-
-       
-
-      
-
-
-
-
-     
-
-
-        internal int getVideoCount()
+        private bool MatchExtebsion(FileInfo item, string[] extebsion)
         {
-            int count = this.videos.Count;
-            foreach (var name in names)
+            foreach (string ext in extebsion)
             {
-                count += name.getVideoCount();
+                if (item.Extension.ToLower() == "." + ext.ToLower()) { return true; }
+            }
+            return false;
+        }
+
+        internal int GetVideoCount()
+        {
+            int count = videos.Count;
+            foreach (Names name in names)
+            {
+                count += name.GetVideoCount();
             }
             return count;
         }
 
-        public LinkedList<FileInfo> getVideoFileList()
+        public LinkedList<FileInfo> GetVideoFileList()
         {
             LinkedList<FileInfo> res = new LinkedList<FileInfo>();
-            foreach(var v in this.videos)
+            foreach (Video v in videos)
             {
-                res.AddLast(v.file);
+                _ = res.AddLast(v.file);
             }
             return res;
         }
 
-        public static string[] GetStrArray(LinkedList<video> list)
+        public static string[] GetStrArray(LinkedList<Video> list)
         {
             string[] res = new string[list.Count];
-            LinkedListNode<video> node = list.First;
+            LinkedListNode<Video> node = list.First;
 
             for (int i = 0; i < list.Count; i++)
             {

@@ -6,19 +6,20 @@ using System.Linq;
 
 namespace SubRenamer
 {
-    class Renamer
+    internal class Renamer
     {
         //private static String regex  = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA_Z\\s]{5,200})";
-        private static String regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
-       // private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
-        private static String regex_headAndTail = "第|話|话|集";
-        private static Dictionary<string, string> redo = new Dictionary<string, string>();
+        private static readonly string regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
+        // private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
+        private static readonly string regex_headAndTail = "第|話|话|集";
+        private static readonly Dictionary<string, string> redo = new Dictionary<string, string>();
         public static void Rename(Names names, BackgroundWorker bkWorker)
         {
-            if (names.isRegex)
+            if (names.IsRegex)
             {
                 Rename_Regex(names, bkWorker);
-            }else if (names.reslovered)
+            }
+            else if (names.Reslovered)
             {
                 Rename_Reslobered(names, bkWorker);
             }
@@ -31,19 +32,16 @@ namespace SubRenamer
         private static void Rename_Reslobered(Names names, BackgroundWorker bkWorker)
         {
             int c = 0;
-            foreach (var video in names.videos)
+            foreach (Video video in names.videos)
             {
-                if (bkWorker != null)
-                {
-                    bkWorker.ReportProgress(++c, video.file.Name);
-                }
+                bkWorker?.ReportProgress(++c, video.file.Name);
                 string num = video.num; ;
-                if (num == null || num == "") 
+                if (num == null || num == "")
                 {
                     continue;
                 }
-                LinkedList<FileInfo> subs = getSubList(names, num);
-                renameSubs(video.file, subs);
+                LinkedList<FileInfo> subs = GetSubList(names, num);
+                RenameSubs(video.file, subs);
 
             }
         }
@@ -51,22 +49,19 @@ namespace SubRenamer
         public static void Rename(Names names, BackgroundWorker bkWorker, int count)
         {
             int c = count;
-            foreach (var video in names.videos)
+            foreach (Video video in names.videos)
             {
-                if (bkWorker != null)
-                {
-                    bkWorker.ReportProgress(++c, video.file.Name);
-                }
-                string num = getVideoNumber(video.file);
+                bkWorker?.ReportProgress(++c, video.file.Name);
+                string num = GetVideoNumber(video.file);
                 if (num == null)
                 {
                     continue;
                 }
-                LinkedList<FileInfo> subs = getSubList(names, num);
-                renameSubs(video.file, subs);
+                LinkedList<FileInfo> subs = GetSubList(names, num);
+                RenameSubs(video.file, subs);
 
             }
-            foreach (var name in names.names)
+            foreach (Names name in names.names)
             {
                 Rename(name, bkWorker, c);
             }
@@ -75,48 +70,49 @@ namespace SubRenamer
 
         private static void Rename_Regex(Names names, BackgroundWorker bkWorker)
         {
-            Dictionary<FileInfo, string> videoDic = getDic(names.getVideoFileList(), names.getVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = getDic(names.subs, names.getSubReplasePattern());
+            Dictionary<FileInfo, string> videoDic = GetDic(names.GetVideoFileList(), names.GetVideoReplasePattern());
+            Dictionary<FileInfo, string> subDic = GetDic(names.subs, names.GetSubReplasePattern());
             int c = 0;
-            foreach (var video in videoDic.Keys)
+            foreach (FileInfo video in videoDic.Keys)
             {
-                if (bkWorker != null)
-                {
-                    bkWorker.ReportProgress(++c, video.Name);
-                }
-                LinkedList<FileInfo> subs = getSubList(subDic, videoDic[video]);
-                renameSubs(video, subs);
+                bkWorker?.ReportProgress(++c, video.Name);
+                LinkedList<FileInfo> subs = GetSubList(subDic, videoDic[video]);
+                RenameSubs(video, subs);
             }
         }
 
-        internal static void renameSubs(FileInfo video, LinkedList<FileInfo> subs)
+        internal static void RenameSubs(FileInfo video, LinkedList<FileInfo> subs)
         {
-            string vname = getFullNameWithOutExtension(video);
-            foreach (var sub in subs)
+            string vname = GetFullNameWithOutExtension(video);
+            foreach (FileInfo sub in subs)
             {
-                string ext = getFullExtension(sub);
+                string ext = GetFullExtension(sub);
                 try
                 {
                     string new_name = vname + ext;
-                    setRedoDic(sub.FullName, new_name);
+                    SetRedoDic(sub.FullName, new_name);
                     sub.MoveTo(new_name);
                 }
                 catch
                 {
                     string new_name = vname + "." + sub.Name;
-                    setRedoDic(sub.FullName, new_name);
+                    SetRedoDic(sub.FullName, new_name);
                     sub.MoveTo(new_name);
                 }
             }
         }
 
-        private static void setRedoDic(string oldname, string newname)
+        private static void SetRedoDic(string oldname, string newname)
         {
-            if (redo.ContainsKey(oldname)) redo.Remove(oldname);
+            if (redo.ContainsKey(oldname))
+            {
+                _ = redo.Remove(oldname);
+            }
+
             redo.Add(oldname, newname);
         }
 
-        public static void clearRedoDic()
+        public static void ClearRedoDic()
         {
             redo.Clear();
         }
@@ -136,28 +132,24 @@ namespace SubRenamer
                     }
                     catch
                     {
-                        clearRedoDic();
+                        ClearRedoDic();
                         return false;
                     }
                 }
             }
-            clearRedoDic();
+            ClearRedoDic();
             return true;
         }
 
-        public static bool isRedoAvailable()
+        public static bool IsRedoAvailable()
         {
-            if (redo.Count == 0)
-            {
-                return false;
-            }
-            return true;
+            return redo.Count != 0;
         }
 
-        internal static Dictionary<FileInfo, string> getDic(LinkedList<FileInfo> videos, string p)
+        internal static Dictionary<FileInfo, string> GetDic(LinkedList<FileInfo> videos, string p)
         {
             Dictionary<FileInfo, string> dic = new Dictionary<FileInfo, string>();
-            foreach (var video in videos)
+            foreach (FileInfo video in videos)
             {
                 string name = video.Name;
                 string str = System.Text.RegularExpressions.Regex.Replace(name, p, "");
@@ -166,7 +158,7 @@ namespace SubRenamer
             return dic;
         }
 
-        private static string getFullNameWithOutExtension(FileInfo video)
+        private static string GetFullNameWithOutExtension(FileInfo video)
         {
             char[] cs = video.FullName.ToArray();
             for (int i = cs.Length - 1; i >= 0; i--)
@@ -179,7 +171,7 @@ namespace SubRenamer
             return cs.ToString();
         }
 
-        private static string getFullExtension(FileInfo sub)
+        private static string GetFullExtension(FileInfo sub)
         {
             string name = sub.Name.Trim();
             char[] cs = name.ToArray();
@@ -212,36 +204,36 @@ namespace SubRenamer
             return sub.Extension;
         }
 
-        internal static LinkedList<FileInfo> getSubList(Names names, string num)
+        internal static LinkedList<FileInfo> GetSubList(Names names, string num)
         {
             LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
-            foreach (var sub in names.subs)
+            foreach (FileInfo sub in names.subs)
             {
-                if (isFit(sub, num))
+                if (IsFit(sub, num))
                 {
-                    subs.AddLast(sub);
+                    _ = subs.AddLast(sub);
                 }
             }
             return subs;
         }
 
-        internal static LinkedList<FileInfo> getSubList(Dictionary<FileInfo, string> subDic, string key)
+        internal static LinkedList<FileInfo> GetSubList(Dictionary<FileInfo, string> subDic, string key)
         {
             LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
-            foreach (var sub in subDic.Keys)
+            foreach (FileInfo sub in subDic.Keys)
             {
                 if (subDic[sub].Equals(key))
                 {
-                    subs.AddLast(sub);
-                   // subDic.Remove(sub);
+                    _ = subs.AddLast(sub);
+                    // subDic.Remove(sub);
                 }
             }
             return subs;
         }
 
-        private static bool isFit(FileInfo sub, string num)
+        private static bool IsFit(FileInfo sub, string num)
         {
-            string subNum = getVideoNumber(sub);
+            string subNum = GetVideoNumber(sub);
             if (subNum != null)
             {
                 if (subNum == num)
@@ -257,19 +249,16 @@ namespace SubRenamer
             {
                 string name = sub.Name.Replace(sub.Extension, "");
                 name = System.Text.RegularExpressions.Regex.Replace(name, regex, "");
-                if (isFitNum(name, num))
+                if (IsFitNum(name, num))
                 {
                     return true;
                 }
             }
 
-
-
-
             return false;
         }
 
-        private static bool isFitNum(string name, string num)
+        private static bool IsFitNum(string name, string num)
         {
             char[] na = name.ToCharArray();
             char[] nm = num.ToCharArray();
@@ -305,11 +294,11 @@ namespace SubRenamer
             return false;
         }
 
-        internal static string getVideoNumber(System.IO.FileInfo video)
+        internal static string GetVideoNumber(FileInfo video)
         {
-            String name = (String)video.Name.Clone();
+            string name = (string)video.Name.Clone();
             name = name.Replace(video.Extension, "");
-            LinkedList<string> strs = split(name);
+            LinkedList<string> strs = Split(name);
             foreach (string str in strs)
             {
                 string str2 = str;
@@ -322,8 +311,7 @@ namespace SubRenamer
 
                 str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
 
-                float f;
-                if (!float.TryParse(str2, out f))
+                if (!float.TryParse(str2, out float f))
                 {
                     continue;
                 }
@@ -335,46 +323,11 @@ namespace SubRenamer
 
                 return str2;
 
-
-                //if (str2.Length <= 1 || str2.Length >= 4)
-                //{
-                //    continue;
-                //}
-                //else if (isNumberic(str2))
-                //{
-                //    return str2;
-                //}
             }
             return null;
         }
 
-
-
-
-        private static bool isNumberic(string str)
-        {
-            char[] cs = str.ToArray();
-            foreach (var c in cs)
-            {
-                if (c < '0' || c > '9')
-                {
-                    return false;
-                }
-            }
-            return true;
-            //try
-            //{
-            //    Convert.ToInt32(str);
-            //    return true;
-            //}
-            //catch
-            //{
-            //    return false;
-            //}
-
-        }
-
-        private static LinkedList<string> split(string name)
+        private static LinkedList<string> Split(string name)
         {
             LinkedList<string> result = new LinkedList<string>();
             string name2 = Replace(name);
@@ -385,12 +338,12 @@ namespace SubRenamer
                 {
                     try
                     {
-                        int end = findMatchingPos(ca, i, ' ');
-                        result.AddLast(name2.Substring(i + 1, end - i - 1));
+                        int end = FindMatchingPos(ca, i, ' ');
+                        _ = result.AddLast(name2.Substring(i + 1, end - i - 1));
                     }
                     catch
                     {
-                        result.AddLast(name2.Substring(i));
+                        _ = result.AddLast(name2.Substring(i));
                     }
                 }
             }
@@ -410,7 +363,7 @@ namespace SubRenamer
             return s;
         }
 
-        private static int findMatchingPos(char[] ca, int begin, char left)
+        private static int FindMatchingPos(char[] ca, int begin, char left)
         {
             char right;
             switch (left)
