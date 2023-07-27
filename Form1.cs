@@ -240,6 +240,7 @@ namespace SubRenamer
         private void Button_regex_panel_Click_1(object sender, EventArgs e)
         {
             SetPanelRegexVisible(!panel_regex.Visible);
+            SetExtText_BoxVisable(!panel_regex.Visible);
             button_regex_panel.Text = panel_regex.Visible == false ? "↓" : "↑";
         }
 
@@ -959,6 +960,12 @@ namespace SubRenamer
         {
             TextBox subExt = (TextBox)sender;
             Extentions.SetExts(subExt.Text, Extentions.SUB);
+        }
+
+        private void SetExtText_BoxVisable(bool visable)
+        {
+            textBox_subExt.Visible = visable;
+            textBox_videoExt.Visible = visable;
         }
     }
 }
