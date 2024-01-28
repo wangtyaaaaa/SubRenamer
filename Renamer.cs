@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -41,7 +42,7 @@ namespace SubRenamer
                     continue;
                 }
                 LinkedList<FileInfo> subs = GetSubList(names, num);
-                RenameSubs(video.file, subs);
+                RenameSubs(video.file, subs, null);
 
             }
         }
@@ -58,7 +59,7 @@ namespace SubRenamer
                     continue;
                 }
                 LinkedList<FileInfo> subs = GetSubList(names, num);
-                RenameSubs(video.file, subs);
+                RenameSubs(video.file, subs, null);
 
             }
             foreach (Names name in names.names)
@@ -77,16 +78,16 @@ namespace SubRenamer
             {
                 bkWorker?.ReportProgress(++c, video.Name);
                 LinkedList<FileInfo> subs = GetSubList(subDic, videoDic[video]);
-                RenameSubs(video, subs);
+                RenameSubs(video, subs, null);
             }
         }
 
-        internal static void RenameSubs(FileInfo video, LinkedList<FileInfo> subs)
+        internal static void RenameSubs(FileInfo video, LinkedList<FileInfo> subs, string delimiter)
         {
             string vname = GetFullNameWithOutExtension(video);
             foreach (FileInfo sub in subs)
             {
-                string ext = GetFullExtension(sub);
+                string ext = GetFullExtension(sub, delimiter);
                 try
                 {
                     string new_name = vname + ext;
@@ -169,6 +170,18 @@ namespace SubRenamer
                 }
             }
             return cs.ToString();
+        }
+
+
+        private static string GetFullExtension(FileInfo sub,string delimiter)
+        {
+            if (delimiter == null|| delimiter.Length==0)
+                return GetFullExtension(sub);
+            string name = sub.Name.Trim();
+            int index = name.LastIndexOf(delimiter[0]);
+            if(index == -1)
+                return GetFullExtension(sub);
+            return name.Substring(index);
         }
 
         private static string GetFullExtension(FileInfo sub)
@@ -405,5 +418,7 @@ namespace SubRenamer
             }
             throw new Exception("cannot find matching pos");
         }
+
+
     }
 }

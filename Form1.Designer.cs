@@ -60,6 +60,8 @@ namespace SubRenamer
             this.button_regex_panel = new System.Windows.Forms.Button();
             this.panel_path = new System.Windows.Forms.Panel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.textBox_delimiter = new System.Windows.Forms.TextBox();
+            this.label_delimiter = new System.Windows.Forms.Label();
             this.statusStrip1.SuspendLayout();
             this.panel_root.SuspendLayout();
             this.panel_regex.SuspendLayout();
@@ -73,15 +75,15 @@ namespace SubRenamer
             // 
             this.textBox_path.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_path.Location = new System.Drawing.Point(6, 6);
+            this.textBox_path.Location = new System.Drawing.Point(7, 6);
             this.textBox_path.Name = "textBox_path";
-            this.textBox_path.Size = new System.Drawing.Size(529, 21);
+            this.textBox_path.Size = new System.Drawing.Size(395, 21);
             this.textBox_path.TabIndex = 0;
             // 
             // button_path
             // 
             this.button_path.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_path.Location = new System.Drawing.Point(541, 5);
+            this.button_path.Location = new System.Drawing.Point(408, 4);
             this.button_path.Name = "button_path";
             this.button_path.Size = new System.Drawing.Size(75, 23);
             this.button_path.TabIndex = 1;
@@ -349,12 +351,33 @@ namespace SubRenamer
             // 
             this.panel_path.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel_path.Controls.Add(this.label_delimiter);
+            this.panel_path.Controls.Add(this.textBox_delimiter);
             this.panel_path.Controls.Add(this.button_path);
             this.panel_path.Controls.Add(this.textBox_path);
             this.panel_path.Location = new System.Drawing.Point(6, 6);
             this.panel_path.Name = "panel_path";
             this.panel_path.Size = new System.Drawing.Size(622, 33);
             this.panel_path.TabIndex = 2;
+            // 
+            // textBox_delimiter
+            // 
+            this.textBox_delimiter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_delimiter.Location = new System.Drawing.Point(566, 6);
+            this.textBox_delimiter.MaxLength = 1;
+            this.textBox_delimiter.Name = "textBox_delimiter";
+            this.textBox_delimiter.Size = new System.Drawing.Size(50, 21);
+            this.textBox_delimiter.TabIndex = 2;
+            // 
+            // label_delimiter
+            // 
+            this.label_delimiter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label_delimiter.AutoSize = true;
+            this.label_delimiter.Location = new System.Drawing.Point(495, 9);
+            this.label_delimiter.Name = "label_delimiter";
+            this.label_delimiter.Size = new System.Drawing.Size(65, 12);
+            this.label_delimiter.TabIndex = 3;
+            this.label_delimiter.Text = "后缀分隔符";
             // 
             // Form1
             // 
@@ -419,6 +442,8 @@ namespace SubRenamer
         private System.Windows.Forms.TextBox textBox_subExt;
         private System.Windows.Forms.TextBox textBox_videoExt;
         private System.Windows.Forms.ToolTip toolTip1;
+        private Label label_delimiter;
+        private TextBox textBox_delimiter;
     }
 }
 

@@ -117,29 +117,21 @@ namespace SubRenamer
                 _ = MessageBox.Show("请先获取文件");
                 return;
             }
-            //if (!ischecked)
-            //{
-            //    if (!DoCheckMessage())
-            //    {
-            //        return;
-            //    }
-            //}
+            if (!ischecked)
+            {
+                if (!DoCheckMessage())
+                {
+                    return;
+                }
+            }
             DoRename();
         }
 
         private void DoRename()
         {
-            //this.toolStripStatusLabel1.Text = "正在运行...";
             SetClickable(false);
             toolStripProgressBar1.Maximum = names.GetVideoCount();
-            //this.backgroundWorker1.DoWork += backgroundWorker1_DoWork;
-            //this.backgroundWorker1.WorkerReportsProgress = true;
-            //this.backgroundWorker1.ProgressChanged += backgroundWorker1_ProgressChanged;
             backgroundWorker1.RunWorkerAsync();
-
-            //Renamer.Rename(names);
-            //this.maskedTextBox1.Text = "修改完成";
-            //this.button2_Click(null, null);
         }
 
         private void BackgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -197,12 +189,10 @@ namespace SubRenamer
                     if (video != null && subs.Count != 0)
                     {
                         bgWorker.ReportProgress(++c, video.Name);
-                        Renamer.RenameSubs(video, subs);
+                        Renamer.RenameSubs(video, subs, textBox_delimiter.Text);
                     }
                 }
             }
-
-
             bgWorker.ReportProgress(-1, END_MSG);
         }
 
