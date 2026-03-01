@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace SubRenamer
 {
@@ -307,8 +309,19 @@ namespace SubRenamer
             return false;
         }
 
-        internal static string GetVideoNumber(FileInfo video)
+
+        /// <summary>
+        /// （重构后）提取文件名中所有匹配的数字字符串（和原GetVideoNumber算法一致）
+        /// </summary>
+        /// <param name="file">文件信息</param>
+        /// <returns>匹配的数字字符串数组（无匹配返回空数组）</returns>
+        public static string[] GetVideoNumberArray(FileInfo video)
         {
+            if (video == null || string.IsNullOrEmpty(video.Name))
+                return Array.Empty<string>();
+            
+            var result = new List<string>(); ;
+            // 复用原GetVideoNumber的匹配逻辑，提取所有匹配项
             string name = (string)video.Name.Clone();
             name = name.Replace(video.Extension, "");
             LinkedList<string> strs = Split(name);
@@ -334,10 +347,46 @@ namespace SubRenamer
                     continue;
                 }
 
-                return str2;
-
+                result.Add(str2);
             }
-            return null;
+            return result.ToArray();
+        }
+
+        internal static string GetVideoNumber(FileInfo video)
+        {
+            var numbers = GetVideoNumberArray(video);
+            return numbers.Length > 0 ? numbers[0] : null;
+
+
+            //string name = (string)video.Name.Clone();
+            //name = name.Replace(video.Extension, "");
+            //LinkedList<string> strs = Split(name);
+            //foreach (string str in strs)
+            //{
+            //    string str2 = str;
+            //    while (str2.ToLower().Contains("ep"))
+            //    {
+            //        char[] p = { 'p', 'P' };
+            //        int index = str2.IndexOfAny(p);
+            //        str2 = str2.Substring(index + 1);
+            //    }
+
+            //    str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
+
+            //    if (!float.TryParse(str2, out float f))
+            //    {
+            //        continue;
+            //    }
+
+            //    if (f < 0 || f > 1900)
+            //    {
+            //        continue;
+            //    }
+
+            //    return str2;
+
+            //}
+            //return null;
         }
 
         private static LinkedList<string> Split(string name)

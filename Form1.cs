@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -117,6 +118,7 @@ namespace SubRenamer
                 _ = MessageBox.Show("请先获取文件");
                 return;
             }
+#if ENABLE_CHECK_MESSAGE // 编译符号控制：定义则保留检查逻辑，未定义则直接跳过
             if (!ischecked)
             {
                 if (!DoCheckMessage())
@@ -124,6 +126,7 @@ namespace SubRenamer
                     return;
                 }
             }
+#endif
             DoRename();
         }
 
@@ -418,42 +421,79 @@ namespace SubRenamer
 
         private void LoadNames_normal(Names names)
         {
-            LinkedList<FileInfo> allsubs = new LinkedList<FileInfo>();
-            foreach (FileInfo var in names.subs)
+            // ===== 步骤1：临时变量 - 提取视频列表，用于批量计算集号 =====
+            var videoList = names.videos.ToList();
+
+            // ===== 步骤2：临时变量 - 生成二维数字数组（仅方法内使用） =====
+            var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
+
+            // ===== 步骤3：临时变量 - 筛选集号列索引（仅方法内使用） =====
+            int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
+
+            // ========== 步骤3：计算每个视频的最终集号，存入Names ==========
+            for (int i = 0; i < videoList.Count; i++)
             {
-                _ = allsubs.AddLast(var);
-            }
-            foreach (Video video in names.videos)
-            {
-                string num = Renamer.GetVideoNumber(video.file);
-                Panel panel = GetNewChildPanel();
-                Label label_v = NewFileLable(video.file.Name, name_video_lable, video.file);
-                AddNewSubLable(panel, label_v);
-                AddChildrenPanel(panel);
-                if (num != null)
+                var video = videoList[i];
+                string finalEpisodeStr = null; // 默认无集号
+
+                // 仅当列索引有效，且当前视频行有该列数据时，计算集号
+                if (tempTargetColIdx >= 0)
                 {
-                    LinkedList<FileInfo> subs = Renamer.GetSubList(names, num);
-                    foreach (FileInfo sub in subs)
+                    var episodeStrList = tempNumber2DArray[i];
+                    if (tempTargetColIdx < episodeStrList.Count)
                     {
-                        Label label_s = NewFileLable(sub.Name, name_sub_lable, sub);
-                        AddNewSubLable(panel, label_s);
-                        _ = allsubs.Remove(sub);
+                        // 直接取原始字符串集号，不转数字
+                        finalEpisodeStr = episodeStrList[tempTargetColIdx];
                     }
                 }
+
+                // 仅存储最终集号到Names（临时变量丢弃）
+                video.num = finalEpisodeStr;
+
             }
 
-
-            Panel panel_1 = GetNewChildPanel();
-            Label label_v1 = NewFileLable("不改名字幕文件", name_video_lable, null);
-            AddNewSubLable(panel_1, label_v1);
-            AddChildrenPanel(panel_1);
-            foreach (FileInfo sub in allsubs)
+            // ========== 步骤4：处理界面渲染（基于已有文件+新计算的集号） ==========
+            panel1.Controls.Clear();
+            var allSubs = new LinkedList<FileInfo>(names.subs); // 复制字幕列表，用于标记已匹配
+            // 渲染每个视频及匹配的字幕
+            foreach (Video video in names.videos)
             {
-                Label label_s = NewFileLable(sub.Name, name_sub_lable, sub);
-                AddNewSubLable(panel_1, label_s);
+                // 从 video.num 读取原始集号字符串
+                string episodeNum = video.num;
+
+                // 创建视频面板
+                Panel videoPanel = GetNewChildPanel();
+                Label videoLabel = NewFileLable(video.file.Name, name_video_lable, video.file);
+                AddNewSubLable(videoPanel, videoLabel);
+
+                // 匹配字幕（复用原有GetSubList逻辑）
+                if (!string.IsNullOrEmpty(episodeNum))
+                {
+                    LinkedList<FileInfo> matchedSubs = Renamer.GetSubList(names, episodeNum);
+                    foreach (FileInfo sub in matchedSubs)
+                    {
+                        Label subLabel = NewFileLable(sub.Name, name_sub_lable, sub);
+                        AddNewSubLable(videoPanel, subLabel);
+                        allSubs.Remove(sub);
+                    }
+                }
+                AddChildrenPanel(videoPanel);
+            }
+
+            // 渲染未匹配的字幕
+            Panel unMatchedPanel = GetNewChildPanel();
+            Label unMatchedTitle = NewFileLable("不改名字幕文件", name_video_lable, null);
+            AddNewSubLable(unMatchedPanel, unMatchedTitle);
+            AddChildrenPanel(unMatchedPanel);
+            foreach (FileInfo sub in allSubs)
+            {
+                Label subLabel = NewFileLable(sub.Name, name_sub_lable, sub);
+                AddNewSubLable(unMatchedPanel, subLabel);
             }
 
         }
+
+
 
 
         private void LoadNames_Reslobered(Names names)

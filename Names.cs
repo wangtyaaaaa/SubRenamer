@@ -55,7 +55,7 @@ namespace SubRenamer
     internal class Video
     {
         public FileInfo file;
-        public string num;
+        public string num { get; set; }
 
         public Video(FileInfo file)
         {
@@ -70,7 +70,7 @@ namespace SubRenamer
 
         public string path;
 
-
+     
 
         public string Video_Left { get; }
         public string Video_Right { get; }
