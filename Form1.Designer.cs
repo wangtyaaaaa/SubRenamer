@@ -53,7 +53,7 @@ namespace SubRenamer
             this.panel_name = new System.Windows.Forms.Panel();
             this.textBox_subExt = new System.Windows.Forms.TextBox();
             this.textBox_videoExt = new System.Windows.Forms.TextBox();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel_filelist = new System.Windows.Forms.Panel();
             this.button_redo = new System.Windows.Forms.Button();
             this.button_resolve = new System.Windows.Forms.Button();
             this.button_name2 = new System.Windows.Forms.Button();
@@ -261,7 +261,7 @@ namespace SubRenamer
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_name.Controls.Add(this.textBox_subExt);
             this.panel_name.Controls.Add(this.textBox_videoExt);
-            this.panel_name.Controls.Add(this.panel1);
+            this.panel_name.Controls.Add(this.panel_filelist);
             this.panel_name.Controls.Add(this.button_redo);
             this.panel_name.Controls.Add(this.button_resolve);
             this.panel_name.Controls.Add(this.button_name2);
@@ -293,16 +293,16 @@ namespace SubRenamer
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.panel_filelist.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.AutoScroll = true;
-            this.panel1.BackColor = System.Drawing.SystemColors.Window;
-            this.panel1.Location = new System.Drawing.Point(6, 33);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(610, 233);
-            this.panel1.TabIndex = 10;
-            this.panel1.Resize += new System.EventHandler(this.Panel1_resize);
+            this.panel_filelist.AutoScroll = true;
+            this.panel_filelist.BackColor = System.Drawing.SystemColors.Window;
+            this.panel_filelist.Location = new System.Drawing.Point(6, 33);
+            this.panel_filelist.Name = "panel1";
+            this.panel_filelist.Size = new System.Drawing.Size(610, 233);
+            this.panel_filelist.TabIndex = 10;
+            this.panel_filelist.Resize += new System.EventHandler(this.Panel1_resize);
             // 
             // button_redo
             // 
@@ -438,7 +438,7 @@ namespace SubRenamer
         private System.Windows.Forms.Button button_name2;
         private System.Windows.Forms.Button button_resolve;
         private System.Windows.Forms.Button button_redo;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel_filelist;
         private System.Windows.Forms.TextBox textBox_subExt;
         private System.Windows.Forms.TextBox textBox_videoExt;
         private System.Windows.Forms.ToolTip toolTip1;

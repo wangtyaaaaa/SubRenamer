@@ -28,7 +28,7 @@ namespace SubRenamer
         /// <summary>
         /// lable "集号" 的宽度，在Form1初始化时获取
         /// </summary>
-        private readonly int lable_num_width;
+        private readonly int label_num_width;
 
         /// <summary>
         /// 手动修改pannel拖动目标
@@ -47,12 +47,12 @@ namespace SubRenamer
         /// <summary>
         /// 手动修改pannel内视频文件label名字
         /// </summary>
-        private static readonly string name_video_lable = "lable_video";
+        private static readonly string NAME_VIDEO_LABEL = "lable_video";
 
         /// <summary>
         /// 手动修改pannel内字幕文件label名字
         /// </summary>
-        private static readonly string name_sub_lable = "lable_sub";
+        private static readonly string NAME_SUB_LABEL = "lable_sub";
 
         /// <summary>
         /// Form1初始化，隐藏panel_regex，设置lable_num_width
@@ -60,10 +60,12 @@ namespace SubRenamer
         public Form1()
         {
             InitializeComponent();
-            textBox_path.Text = System.Environment.CurrentDirectory;
-            //this.textBox_path.Text = "D:\\aaa\\aaa\\aab";
+            textBox_path.Text = Environment.CurrentDirectory;
+#if DEBUG
+            this.textBox_path.Text = "C:\\aaa\\bbb";
+#endif         
             SetPanelRegexVisible(false);
-            lable_num_width = label_video_num.Width;
+            label_num_width = label_video_num.Width;
             TextBox_Ext_Size();
             textBox_subExt.Text = Extentions.GetExts(Extentions.SUB);
             textBox_videoExt.Text = Extentions.GetExts(Extentions.VIDEO);
@@ -133,7 +135,7 @@ namespace SubRenamer
         private void DoRename()
         {
             SetClickable(false);
-            toolStripProgressBar1.Maximum = names.GetVideoCount();
+            toolStripProgressBar1.Maximum = names != null ? names.GetVideoCount() : 1;
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -146,7 +148,8 @@ namespace SubRenamer
             object msg = e.UserState;
             if (msg != null)
             {
-                if (msg.ToString().Equals(END_MSG))
+                string str = msg.ToString();
+                if (str != null && str.Equals(END_MSG))
                 {
                     SetClickable(true);
                     toolStripStatusLabel1.Text = "修改完成";
@@ -168,35 +171,41 @@ namespace SubRenamer
             int c = 0;
             //Renamer.Rename(names, bgWorker);
             Renamer.ClearRedoDic();
-            foreach (object panel in panel1.Controls)
+            foreach (object panel in panel_filelist.Controls)
             {
                 if (typeof(Panel).IsInstanceOfType(panel))
                 {
-                    FileInfo video = null;
-                    LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
-                    foreach (object var in (panel as Panel).Controls)
+                    if (panel is Panel _p)
                     {
-                        if (typeof(Label).IsInstanceOfType(var))
+                        FileInfo video = null;
+                        LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+
+                        foreach (object var in _p.Controls)
                         {
-                            Label label = var as Label;
-                            if (label.Name == name_video_lable)
+                            if (typeof(Label).IsInstanceOfType(var))
                             {
-                                video = (FileInfo)label.Tag;
-                            }
-                            else if (label.Name == name_sub_lable)
-                            {
-                                _ = subs.AddLast((FileInfo)label.Tag);
+                                if (var is Label label && label.Tag is FileInfo _fi)
+                                {
+                                    if (label.Name == NAME_VIDEO_LABEL)
+                                    {
+                                        video = _fi;
+                                    }
+                                    else if (label.Name == NAME_SUB_LABEL)
+                                    {
+                                        _ = subs.AddLast(_fi);
+                                    }
+                                }
                             }
                         }
-                    }
-                    if (video != null && subs.Count != 0)
-                    {
-                        bgWorker.ReportProgress(++c, video.Name);
-                        Renamer.RenameSubs(video, subs, textBox_delimiter.Text);
+                        if (video != null && subs.Count != 0 && bgWorker != null)
+                        {
+                            bgWorker.ReportProgress(++c, video.Name);
+                            Renamer.RenameSubs(video, subs, textBox_delimiter.Text);
+                        }
                     }
                 }
             }
-            bgWorker.ReportProgress(-1, END_MSG);
+            if (bgWorker != null) bgWorker.ReportProgress(-1, END_MSG);
         }
 
         private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -258,11 +267,11 @@ namespace SubRenamer
 
         private void Panel1_resize(object sender, EventArgs e)
         {
-            foreach (object p in panel1.Controls)
+            foreach (object p in panel_filelist.Controls)
             {
-                if (typeof(Panel).IsInstanceOfType(p))
+                if (p is Panel _p)
                 {
-                    (p as Panel).Width = panel1.Width - 6;
+                    _p.Width = panel_filelist.Width - 6;
                 }
             }
         }
@@ -273,16 +282,16 @@ namespace SubRenamer
         /// </summary>
         private void Reset_regex_size()
         {
-            textBox_video_right.Left = (groupBox_video.Width / 2) + (lable_num_width / 2) + 4;
+            textBox_video_right.Left = (groupBox_video.Width / 2) + (label_num_width / 2) + 4;
             textBox_video_right.Width = groupBox_video.Right - textBox_video_right.Left - 6;
-            textBox_video_left.Width = (groupBox_video.Width / 2) - ((lable_num_width / 2) + 10) - groupBox_video.Left;
-            label_video_num.Left = (groupBox_video.Width / 2) - (lable_num_width / 2);
+            textBox_video_left.Width = (groupBox_video.Width / 2) - ((label_num_width / 2) + 10) - groupBox_video.Left;
+            label_video_num.Left = (groupBox_video.Width / 2) - (label_num_width / 2);
 
 
-            textBox_sub_right.Left = (groupBox_sub.Width / 2) + (lable_num_width / 2) + 4;
+            textBox_sub_right.Left = (groupBox_sub.Width / 2) + (label_num_width / 2) + 4;
             textBox_sub_right.Width = groupBox_sub.Right - textBox_sub_right.Left - 6;
-            textBox_sub_left.Width = (groupBox_sub.Width / 2) - ((lable_num_width / 2) + 10) - groupBox_sub.Left;
-            label_sub_num.Left = (groupBox_sub.Width / 2) - (lable_num_width / 2);
+            textBox_sub_left.Width = (groupBox_sub.Width / 2) - ((label_num_width / 2) + 10) - groupBox_sub.Left;
+            label_sub_num.Left = (groupBox_sub.Width / 2) - (label_num_width / 2);
         }
 
         /// <summary>
@@ -356,7 +365,7 @@ namespace SubRenamer
 
         private void Button2_Click(object sender, EventArgs e)
         {
-            if (NumberResolver.Reslove(names))
+            if (names != null && NumberResolver.Reslove(names))
             {
                 names.Reslovered = true;
                 LoadNames(names);
@@ -379,19 +388,13 @@ namespace SubRenamer
 
             if (Renamer.Redo())
             {
-                DialogResult dr = MessageBox.Show("撤销成功");
-                if (dr == DialogResult.OK)
-                {
-                    Button_name2_Click(null, null);
-                }
+                Button_name2_Click(null, null);
+                _ = MessageBox.Show("撤销成功");
             }
             else
             {
-                DialogResult dr = MessageBox.Show("撤销失败，重来吧");
-                if (dr == DialogResult.OK)
-                {
-                    Button_name2_Click(null, null);
-                }
+                Button_name2_Click(null, null);
+                _ = MessageBox.Show("撤销失败，重来吧");
             }
         }
 
@@ -403,7 +406,7 @@ namespace SubRenamer
                 return;
             }
 
-            panel1.Controls.Clear();
+            panel_filelist.Controls.Clear();
             if (names.IsRegex)
             {
                 LoadNames_Regex(names);
@@ -421,58 +424,81 @@ namespace SubRenamer
 
         private void LoadNames_normal(Names names)
         {
-            // ===== 步骤1：临时变量 - 提取视频列表，用于批量计算集号 =====
+            // ===== 步骤1.1：临时变量 - 提取视频列表，用于批量计算集号 =====
             var videoList = names.videos.ToList();
-
-            // ===== 步骤2：临时变量 - 生成二维数字数组（仅方法内使用） =====
-            var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
-
-            // ===== 步骤3：临时变量 - 筛选集号列索引（仅方法内使用） =====
-            int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
-
-            // ========== 步骤3：计算每个视频的最终集号，存入Names ==========
+            // ===== 步骤1.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
+            // var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
+            var tempVideo2DArray = NumberResolver.ExtractFileName2DArray(videoList);
+            // ===== 步骤1.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
+            // int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
+            int tempVideoColIdx = NumberResolver.FindHighestMODColumn(tempVideo2DArray);
+            // ========== 步骤1.4：计算每个视频的最终集号，存入names.videos.num ==========
             for (int i = 0; i < videoList.Count; i++)
             {
                 var video = videoList[i];
                 string finalEpisodeStr = null; // 默认无集号
-
                 // 仅当列索引有效，且当前视频行有该列数据时，计算集号
-                if (tempTargetColIdx >= 0)
+                if (tempVideoColIdx >= 0)
                 {
-                    var episodeStrList = tempNumber2DArray[i];
-                    if (tempTargetColIdx < episodeStrList.Count)
+                    var episodeStrList = tempVideo2DArray[i];
+                    if (tempVideoColIdx < episodeStrList.Count)
                     {
                         // 直接取原始字符串集号，不转数字
-                        finalEpisodeStr = episodeStrList[tempTargetColIdx];
+                        finalEpisodeStr = episodeStrList[tempVideoColIdx];
                     }
                 }
-
                 // 仅存储最终集号到Names（临时变量丢弃）
                 video.num = finalEpisodeStr;
-
             }
 
-            // ========== 步骤4：处理界面渲染（基于已有文件+新计算的集号） ==========
-            panel1.Controls.Clear();
-            var allSubs = new LinkedList<FileInfo>(names.subs); // 复制字幕列表，用于标记已匹配
+            // ===== 步骤2.1：临时变量 - 提取视频列表，用于批量计算集号 =====
+            var subList = names.subs.ToList();
+            // ===== 步骤2.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
+            // var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
+            var tempSub2DArray = NumberResolver.ExtractFileName2DArray(subList);
+            // ===== 步骤2.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
+            // int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
+            int tempSubColIdx = NumberResolver.FindHighestMODColumn(tempSub2DArray);
+            // ========== 步骤2.4：计算每个视频的最终集号，存入names.subs.num ==========
+            for (int i = 0; i < subList.Count; i++)
+            {
+                var sub = subList[i];
+                string finalEpisodeStr = null; // 默认无集号
+                // 仅当列索引有效，且当前视频行有该列数据时，计算集号
+                if (tempSubColIdx >= 0)
+                {
+                    var episodeStrList = tempSub2DArray[i];
+                    if (tempSubColIdx < episodeStrList.Count)
+                    {
+                        // 直接取原始字符串集号，不转数字
+                        finalEpisodeStr = episodeStrList[tempSubColIdx];
+                    }
+                }
+                // 仅存储最终集号到Names（临时变量丢弃）
+                sub.num = finalEpisodeStr;
+            }
+
+
+            // ========== 步骤3：处理界面渲染（基于已有文件+新计算的集号） ==========
+            panel_filelist.Controls.Clear();
+            var allSubs = File.FileListTOFileInfoList(names.subs); // 复制字幕列表，用于标记已匹配
             // 渲染每个视频及匹配的字幕
-            foreach (Video video in names.videos)
+            foreach (File video in names.videos)
             {
                 // 从 video.num 读取原始集号字符串
                 string episodeNum = video.num;
-
                 // 创建视频面板
-                Panel videoPanel = GetNewChildPanel();
-                Label videoLabel = NewFileLable(video.file.Name, name_video_lable, video.file);
+                Panel videoPanel = CreateNewChildPanel();
+                Label videoLabel = CreateNewFileLable(video.file.Name, NAME_VIDEO_LABEL, video.file);
                 AddNewSubLable(videoPanel, videoLabel);
 
                 // 匹配字幕（复用原有GetSubList逻辑）
                 if (!string.IsNullOrEmpty(episodeNum))
                 {
-                    LinkedList<FileInfo> matchedSubs = Renamer.GetSubList(names, episodeNum);
+                    LinkedList<FileInfo> matchedSubs = Renamer.GetSubListByNum(names, episodeNum);
                     foreach (FileInfo sub in matchedSubs)
                     {
-                        Label subLabel = NewFileLable(sub.Name, name_sub_lable, sub);
+                        Label subLabel = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
                         AddNewSubLable(videoPanel, subLabel);
                         allSubs.Remove(sub);
                     }
@@ -481,13 +507,13 @@ namespace SubRenamer
             }
 
             // 渲染未匹配的字幕
-            Panel unMatchedPanel = GetNewChildPanel();
-            Label unMatchedTitle = NewFileLable("不改名字幕文件", name_video_lable, null);
+            Panel unMatchedPanel = CreateNewChildPanel();
+            Label unMatchedTitle = CreateNewFileLable("不改名字幕文件", NAME_VIDEO_LABEL, null);
             AddNewSubLable(unMatchedPanel, unMatchedTitle);
             AddChildrenPanel(unMatchedPanel);
             foreach (FileInfo sub in allSubs)
             {
-                Label subLabel = NewFileLable(sub.Name, name_sub_lable, sub);
+                Label subLabel = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
                 AddNewSubLable(unMatchedPanel, subLabel);
             }
 
@@ -499,77 +525,72 @@ namespace SubRenamer
         private void LoadNames_Reslobered(Names names)
         {
             LinkedList<FileInfo> allsubs = new LinkedList<FileInfo>();
-            foreach (FileInfo var in names.subs)
+            foreach (File var in names.subs)
             {
-                _ = allsubs.AddLast(var);
+                _ = allsubs.AddLast(var.file);
             }
 
             foreach (Video video in names.videos)
             {
-                string num = video.num; ;
+                string num = video.num;
                 if (num == null || num == "")
                 {
                     continue;
                 }
                 LinkedList<FileInfo> subs = Renamer.GetSubList(names, num);
-                Panel panel = GetNewChildPanel();
-                Label label_v = NewFileLable(video.file.Name, name_video_lable, video.file);
+                Panel panel = CreateNewChildPanel();
+                Label label_v = CreateNewFileLable(video.file.Name, NAME_VIDEO_LABEL, video.file);
                 AddNewSubLable(panel, label_v);
 
                 foreach (FileInfo sub in subs)
                 {
-                    Label label_s = NewFileLable(sub.Name, name_sub_lable, sub);
+                    Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
                     AddNewSubLable(panel, label_s);
                     _ = allsubs.Remove(sub);
                 }
                 AddChildrenPanel(panel);
             }
 
-            Panel panel_1 = GetNewChildPanel();
-            Label label_v1 = NewFileLable("不改名字幕文件", name_video_lable, null);
+            Panel panel_1 = CreateNewChildPanel();
+            Label label_v1 = CreateNewFileLable("不改名字幕文件", NAME_VIDEO_LABEL, null);
             AddNewSubLable(panel_1, label_v1);
             AddChildrenPanel(panel_1);
             foreach (FileInfo sub in allsubs)
             {
-                Label label_s = NewFileLable(sub.Name, name_sub_lable, sub);
+                Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
                 AddNewSubLable(panel_1, label_s);
             }
         }
 
         private void LoadNames_Regex(Names names)
         {
-            LinkedList<FileInfo> allsubs = new LinkedList<FileInfo>();
-            foreach (FileInfo var in names.subs)
-            {
-                _ = allsubs.AddLast(var);
-            }
+            LinkedList<FileInfo> allsubs = File.FileListTOFileInfoList(names.subs);
 
-
-            Dictionary<FileInfo, string> videoDic = Renamer.GetDic(names.GetVideoFileList(), names.GetVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = Renamer.GetDic(names.subs, names.GetSubReplasePattern());
+            Dictionary<FileInfo, string> videoDic = Renamer.GetDic(File.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
+            Dictionary<FileInfo, string> subDic = Renamer.GetDic(File.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
 
             foreach (FileInfo video in videoDic.Keys)
             {
-                Panel panel = GetNewChildPanel();
+                Panel panel = CreateNewChildPanel();
                 LinkedList<FileInfo> subs = Renamer.GetSubList(subDic, videoDic[video]);
-                Label label_v = NewFileLable(video.Name, name_video_lable, video);
+                Label label_v = CreateNewFileLable(video.Name, NAME_VIDEO_LABEL, video);
                 AddNewSubLable(panel, label_v);
                 foreach (FileInfo sub in subs)
                 {
-                    Label label_s = NewFileLable(sub.Name, name_sub_lable, sub);
+                    Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
                     AddNewSubLable(panel, label_s);
                     _ = allsubs.Remove(sub);
                 }
                 AddChildrenPanel(panel);
             }
 
-            Panel panel_1 = GetNewChildPanel();
-            Label label_v1 = NewFileLable("不改名字幕文件", name_video_lable, null);
+            Panel panel_1 = CreateNewChildPanel();
+            Label label_v1 = CreateNewFileLable("不改名字幕文件", NAME_VIDEO_LABEL, null);
             AddNewSubLable(panel_1, label_v1);
             AddChildrenPanel(panel_1);
             foreach (FileInfo sub in allsubs)
             {
-                Label label_s = NewFileLable(sub.Name, name_sub_lable, sub);
+                Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
                 AddNewSubLable(panel_1, label_s);
             }
         }
@@ -577,26 +598,26 @@ namespace SubRenamer
         private void AddChildrenPanel(Panel panel)
         {
             int buttom = 0;
-            foreach (object pan in panel1.Controls)
+            foreach (object pan in panel_filelist.Controls)
             {
-                if (typeof(Panel).IsInstanceOfType(pan))
+                if (pan is Panel _pan)
                 {
-                    if (buttom < (pan as Panel).Bottom)
+                    if (buttom < _pan.Bottom)
                     {
-                        buttom = (pan as Panel).Bottom;
+                        buttom = _pan.Bottom;
                     }
                 }
             }
             panel.Top = buttom + 3;
             panel.Left = 3;
-            panel.Width = panel1.Width;
-            panel1.Controls.Add(panel);
+            panel.Width = panel_filelist.Width;
+            panel_filelist.Controls.Add(panel);
             //this.flowLayoutPanel1.Controls.Add(panel);
         }
 
-        private Panel GetNewChildPanel()
+        private Panel CreateNewChildPanel()
         {
-            int pl_wi = panel1.Size.Width;
+            int pl_wi = panel_filelist.Size.Width;
             Panel panel = new Panel
             {
                 BackColor = SystemColors.ActiveCaption,
@@ -618,28 +639,31 @@ namespace SubRenamer
 
         private void PanelAutoSizeChanged(object sender, EventArgs e)
         {
-            (sender as Panel).Width = panel1.Width;
+            if (sender is Panel _s)
+                _s.Width = panel_filelist.Width;
         }
 
         private void DragDrop_Panel(object sender, DragEventArgs e)
         {
             //手动调整窗口时debug用
             //this.label1.Text = "DragDrop";
-            if (dragTraget != null)
+            if (sender is Panel _s)
             {
-                if (typeof(Panel).IsInstanceOfType(sender))
+                if (dragTraget != null)
                 {
-                    if (!(sender as Panel).Controls.Contains(dragTraget))
+                    if (!_s.Controls.Contains(dragTraget))
                     {
                         //e.Effect = DragDropEffects.Move;
-                        RemoveSubLable((Panel)dragTraget.Parent, dragTraget);
-                        AddNewSubLable(sender as Panel, dragTraget);
+                        if (dragTraget.Parent is Panel _p)
+                            RemoveSubLable(_p, dragTraget);
+                        AddNewSubLable(_s, dragTraget);
                         //MessageBox.Show((string)e.Data.GetData(DataFormats.StringFormat));
                     }
                 }
+
+                //setDragTraget(null);
+                _s.BackColor = SystemColors.ActiveCaption;
             }
-          //setDragTraget(null);
-          (sender as Panel).BackColor = SystemColors.ActiveCaption;
             //dragTraget = null;
             //this.label_file.Text = null;
         }
@@ -648,14 +672,14 @@ namespace SubRenamer
         {
             //手动调整窗口时debug用
             //this.label1.Text = "DragEnter";
-            if (dragTraget != null)
+            if (sender is Panel _s)
             {
-                if (typeof(Panel).IsInstanceOfType(sender))
+                if (dragTraget != null)
                 {
-                    if (!(sender as Panel).Controls.Contains(dragTraget))
+                    if (!_s.Controls.Contains(dragTraget))
                     {
                         e.Effect = DragDropEffects.Move;
-                        (sender as Panel).BackColor = SystemColors.Highlight;
+                        _s.BackColor = SystemColors.Highlight;
                     }
                     else
                     {
@@ -668,9 +692,9 @@ namespace SubRenamer
 
         private void DragLeave_Panel(object sender, EventArgs e)
         {
-            if (typeof(Panel).IsInstanceOfType(sender))
+            if (sender is Panel _s)
             {
-                (sender as Panel).BackColor = SystemColors.ActiveCaption;
+                _s.BackColor = SystemColors.ActiveCaption;
             }
         }
 
@@ -682,22 +706,22 @@ namespace SubRenamer
             bool resize = false;
             foreach (object lab in panel.Controls)
             {
-                if (typeof(Label).IsInstanceOfType(lab))
+                if (lab is Label _lab)
                 {
-                    if ((lab as Label).Name == name_video_lable)
+                    if (_lab.Name == NAME_VIDEO_LABEL)
                     {
                         video = lab as Label;
                     }
-                    else if ((lab as Label).Name == name_sub_lable)
+                    else if (_lab.Name == NAME_SUB_LABEL)
                     {
-                        if (buttom < (lab as Label).Bottom)
+                        if (buttom < _lab.Bottom)
                         {
-                            buttom = (lab as Label).Bottom;
+                            buttom = _lab.Bottom;
                         }
                     }
                 }
             }
-            if (lable.Name == name_video_lable)
+            if (lable.Name == NAME_VIDEO_LABEL)
             {
                 if (video == null)
                 {
@@ -706,7 +730,7 @@ namespace SubRenamer
                     resize = true;
                 }
             }
-            else if (lable.Name == name_sub_lable)
+            else if (lable.Name == NAME_SUB_LABEL)
             {
                 lable.Location = video != null ? new Point(video.Right + 3, buttom + 3) : new Point((panel.Width / 2) + 3, buttom + 3);
                 panel.Controls.Add(lable);
@@ -717,7 +741,7 @@ namespace SubRenamer
             if (resize)
             {
                 panel.Height = buttom;
-                ResizeChildPanel(panel.Parent);
+                if (panel.Parent != null) ResizeChildPanel(panel.Parent);
             }
         }
 
@@ -729,11 +753,11 @@ namespace SubRenamer
             int bottom = 3;
             foreach (object lab in panel.Controls)
             {
-                if (typeof(Label).IsInstanceOfType(lab))
+                if (lab is Label _lab)
                 {
-                    if ((lab as Label).Name == name_sub_lable)
+                    if (_lab.Name == NAME_SUB_LABEL)
                     {
-                        _ = list.AddLast(lab as Label);
+                        _ = list.AddLast(_lab);
                     }
                 }
             }
@@ -743,29 +767,27 @@ namespace SubRenamer
                 bottom = lab.Bottom + 3;
             }
             panel.Height = bottom;
-            ResizeChildPanel(panel.Parent);
+            if (panel.Parent != null) ResizeChildPanel(panel.Parent);
 
         }
-        private void ResizeChildPanel(object sender)
+        private static void ResizeChildPanel(object sender)
         {
-            if (!typeof(Panel).IsInstanceOfType(sender))
+            if (sender is Panel _s)
             {
-                return;
-            }
-            Panel panel = sender as Panel;
-            int butt = 3 + panel.AutoScrollPosition.Y;
-
-            foreach (object p in panel.Controls)
-            {
-                if (typeof(Panel).IsInstanceOfType(p))
+                int butt = 3 + _s.AutoScrollPosition.Y;
+                foreach (object p in _s.Controls)
                 {
-                    (p as Panel).Location = new Point(3, butt);
-                    butt += (p as Panel).Height + 3;
+                    if (p is Panel _p)
+                    {
+                        _p.Location = new Point(3, butt);
+                        butt += _p.Height + 3;
+                    }
                 }
             }
+
         }
 
-        private Label NewFileLable(string text, string name, FileInfo file)
+        private Label CreateNewFileLable(string text, string name, FileInfo file)
         {
             Label lable = new Label
             {
@@ -777,7 +799,7 @@ namespace SubRenamer
                 Name = name,
                 Tag = file
             };
-            if (name == name_sub_lable)
+            if (name == NAME_SUB_LABEL)
             {
                 lable.MouseDown += new MouseEventHandler(SubLable_MouseDown);
                 lable.MouseUp += new MouseEventHandler(SubLable_MouseUp);
@@ -848,60 +870,61 @@ namespace SubRenamer
 
         private void SubLable_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
         {
-
-            Form f = (sender as Control).FindForm();
-            Point screenLocation_Panel1 = PointToScreen(panel1.Location);
-            Point screenOffset = SystemInformation.WorkingArea.Location;
-
-            //手动调整窗口时debug用
-            //this.label1.Text = "m (" + (Control.MousePosition.X - screenLocation_Panel1.X) + "," + (Control.MousePosition.Y - screenLocation_Panel1.Y) + ") L ("
-            //    + panel1.AutoScrollPosition.X + "," + panel1.AutoScrollPosition.Y + ") " + panel1.Height + " d "+ dragTraget.ToString();
-
-
-            //(this.Height - this.ClientRectangle.Height)
-
-
-
-            // Cancel the drag if the mouse moves off the form. The screenOffset
-            // takes into account any desktop bands that may be at the top or left
-            // side of the screen.
-            if (((Control.MousePosition.X - screenOffset.X) < f.DesktopBounds.Left) ||
-                ((Control.MousePosition.X - screenOffset.X) > f.DesktopBounds.Right) ||
-                ((Control.MousePosition.Y - screenOffset.Y) < f.DesktopBounds.Top) ||
-                ((Control.MousePosition.Y - screenOffset.Y) > f.DesktopBounds.Bottom))
+            if (sender is Control _s)
             {
-                //手动调整窗口时debug用
-                //label1.Text = "cancel";
-                e.Action = DragAction.Cancel;
-                SetDragTraget(null);
-                //dragTraget = null;
-                //this.label_file.Text = null;
-            }
-            else if (Control.MousePosition.Y - screenLocation_Panel1.Y < 15)
-            {
-                //scrolltime = DateTime.Now;
-
-                //手动调整窗口时debug用
-                //label1.Text = (DateTime.Now - scrolltime).TotalMilliseconds.ToString();
-
-                //if (panel1.AutoScrollPosition.Y < 0)
-                //{
-                if ((DateTime.Now - scrolltime).TotalMilliseconds > 5)
+                Form f = _s.FindForm();
+                if (f != null)
                 {
-                    panel1.AutoScrollPosition = new Point(0, -panel1.AutoScrollPosition.Y - 4);
-                    scrolltime = DateTime.Now;
-                }
-                //}
-            }
-            else if (Control.MousePosition.Y - screenLocation_Panel1.Y > panel1.Height - 15)
-            {
-                if ((DateTime.Now - scrolltime).TotalMilliseconds > 5)
-                {
-                    panel1.AutoScrollPosition = new Point(0, -panel1.AutoScrollPosition.Y + 4);
-                    scrolltime = DateTime.Now;
-                }
-            }
+                    Point screenLocation_Panel1 = PointToScreen(panel_filelist.Location);
+                    Point screenOffset = SystemInformation.WorkingArea.Location;
 
+                    //手动调整窗口时debug用
+                    //this.label1.Text = "m (" + (Control.MousePosition.X - screenLocation_Panel1.X) + "," + (Control.MousePosition.Y - screenLocation_Panel1.Y) + ") L ("
+                    //    + panel1.AutoScrollPosition.X + "," + panel1.AutoScrollPosition.Y + ") " + panel1.Height + " d "+ dragTraget.ToString();
+
+                    //(this.Height - this.ClientRectangle.Height)
+
+                    // Cancel the drag if the mouse moves off the form. The screenOffset
+                    // takes into account any desktop bands that may be at the top or left
+                    // side of the screen.
+                    if (((Control.MousePosition.X - screenOffset.X) < f.DesktopBounds.Left) ||
+                        ((Control.MousePosition.X - screenOffset.X) > f.DesktopBounds.Right) ||
+                        ((Control.MousePosition.Y - screenOffset.Y) < f.DesktopBounds.Top) ||
+                        ((Control.MousePosition.Y - screenOffset.Y) > f.DesktopBounds.Bottom))
+                    {
+                        //手动调整窗口时debug用
+                        //label1.Text = "cancel";
+                        e.Action = DragAction.Cancel;
+                        SetDragTraget(null);
+                        //dragTraget = null;
+                        //this.label_file.Text = null;
+                    }
+                    else if (Control.MousePosition.Y - screenLocation_Panel1.Y < 15)
+                    {
+                        //scrolltime = DateTime.Now;
+
+                        //手动调整窗口时debug用
+                        //label1.Text = (DateTime.Now - scrolltime).TotalMilliseconds.ToString();
+
+                        //if (panel1.AutoScrollPosition.Y < 0)
+                        //{
+                        if ((DateTime.Now - scrolltime).TotalMilliseconds > 5)
+                        {
+                            panel_filelist.AutoScrollPosition = new Point(0, -panel_filelist.AutoScrollPosition.Y - 4);
+                            scrolltime = DateTime.Now;
+                        }
+                        //}
+                    }
+                    else if (Control.MousePosition.Y - screenLocation_Panel1.Y > panel_filelist.Height - 15)
+                    {
+                        if ((DateTime.Now - scrolltime).TotalMilliseconds > 5)
+                        {
+                            panel_filelist.AutoScrollPosition = new Point(0, -panel_filelist.AutoScrollPosition.Y + 4);
+                            scrolltime = DateTime.Now;
+                        }
+                    }
+                }
+            }
         }
 
         private TreeNode GetNodeByNames(Names names)
@@ -948,7 +971,7 @@ namespace SubRenamer
         private LinkedList<string> GetSubStringList(Names names)
         {
             LinkedList<string> result = new LinkedList<string>();
-            foreach (FileInfo sub in names.subs)
+            foreach (FileInfo sub in File.FileListTOFileInfoList(names.subs))
             {
                 if (names.IsRegex)
                 {

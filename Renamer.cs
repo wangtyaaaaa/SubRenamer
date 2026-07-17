@@ -38,14 +38,16 @@ namespace SubRenamer
             foreach (Video video in names.videos)
             {
                 bkWorker?.ReportProgress(++c, video.file.Name);
-                string num = video.num; ;
-                if (num == null || num == "")
+                if (video.num != null && video.num != "")
                 {
-                    continue;
+                    // string num = video.num;
+                    // if (num == null || num == "")
+                    // {
+                    //     continue;
+                    // }
+                    LinkedList<FileInfo> subs = GetSubList(names, video.num);
+                    RenameSubs(video.file, subs, null);
                 }
-                LinkedList<FileInfo> subs = GetSubList(names, num);
-                RenameSubs(video.file, subs, null);
-
             }
         }
 
@@ -54,7 +56,7 @@ namespace SubRenamer
             int c = count;
             foreach (Video video in names.videos)
             {
-                bkWorker?.ReportProgress(++c, video.file.Name);
+                bkWorker.ReportProgress(++c, video.file.Name);
                 string num = GetVideoNumber(video.file);
                 if (num == null)
                 {
@@ -73,8 +75,8 @@ namespace SubRenamer
 
         private static void Rename_Regex(Names names, BackgroundWorker bkWorker)
         {
-            Dictionary<FileInfo, string> videoDic = GetDic(names.GetVideoFileList(), names.GetVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = GetDic(names.subs, names.GetSubReplasePattern());
+            Dictionary<FileInfo, string> videoDic = GetDic(File.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
+            Dictionary<FileInfo, string> subDic = GetDic(File.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
             int c = 0;
             foreach (FileInfo video in videoDic.Keys)
             {
@@ -171,7 +173,8 @@ namespace SubRenamer
                     return new string(cs).Substring(0, i);
                 }
             }
-            return cs.ToString();
+            string str = cs.ToString();
+            return str ?? "";
         }
 
 
@@ -219,14 +222,31 @@ namespace SubRenamer
             return sub.Extension;
         }
 
+
+        /// <summary>
+        /// 使用存储的集号来获取字幕文件
+        /// </summary>
+        /// <param name="names"></param>
+        /// <param name="num">集号</param>
+        /// <returns>字幕文件列表</returns>
+        internal static LinkedList<FileInfo> GetSubListByNum(Names names, string num)
+        {
+            LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+            foreach (Sub sub in names.subs)
+            {
+                if(sub.num==num) subs.AddLast(sub.file);
+            }
+            return subs;
+        }
+
         internal static LinkedList<FileInfo> GetSubList(Names names, string num)
         {
             LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
-            foreach (FileInfo sub in names.subs)
+            foreach (Sub sub in names.subs)
             {
-                if (IsFit(sub, num))
+                if (IsFit(sub.file, num))
                 {
-                    _ = subs.AddLast(sub);
+                    subs.AddLast(sub.file);
                 }
             }
             return subs;
@@ -327,15 +347,7 @@ namespace SubRenamer
             LinkedList<string> strs = Split(name);
             foreach (string str in strs)
             {
-                string str2 = str;
-                while (str2.ToLower().Contains("ep"))
-                {
-                    char[] p = { 'p', 'P' };
-                    int index = str2.IndexOfAny(p);
-                    str2 = str2.Substring(index + 1);
-                }
-
-                str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
+                string str2 = ResloveTitleNumber(str);
 
                 if (!float.TryParse(str2, out float f))
                 {
@@ -347,9 +359,30 @@ namespace SubRenamer
                     continue;
                 }
 
+
                 result.Add(str2);
             }
             return result.ToArray();
+        }
+
+
+        /// <summary>
+        /// 处理集号，去掉ep，第，集之类的字符，尽量保留纯数字
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        internal static string ResloveTitleNumber(string str)
+        {
+            string str2 = str;
+            while (str2.ToLower().Contains("ep"))
+            {
+                char[] p = { 'p', 'P' };
+                int index = str2.IndexOfAny(p);
+                str2 = str2.Substring(index + 1);
+            }
+
+            str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
+            return str2;
         }
 
         internal static string GetVideoNumber(FileInfo video)
@@ -389,7 +422,8 @@ namespace SubRenamer
             //return null;
         }
 
-        private static LinkedList<string> Split(string name)
+        
+        public static LinkedList<string> Split(string name)
         {
             LinkedList<string> result = new LinkedList<string>();
             string name2 = Replace(name);

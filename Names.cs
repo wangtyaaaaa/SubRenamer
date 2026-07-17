@@ -25,12 +25,12 @@ namespace SubRenamer
                     strs = sub_ext;
                     break;
                 default:
-                    return null;
+                    return "";
             }
-            string result = null;
+            string result = "";
             foreach (string ext in strs)
             {
-                result = result == null ? ext : result + "," + ext;
+                result = result == "" ? ext : result + "," + ext;
             }
             return result;
         }
@@ -52,14 +52,39 @@ namespace SubRenamer
         }
     }
 
-    internal class Video
+    internal class File
     {
         public FileInfo file;
         public string num { get; set; }
 
-        public Video(FileInfo file)
+        public File (FileInfo file)
         {
             this.file = file;
+        }
+
+        public static LinkedList<FileInfo> FileListTOFileInfoList<T> (IEnumerable<T> files) where T: File
+        {
+            var result = new LinkedList<FileInfo>();
+            foreach (var item in files)
+            {
+                result.AddLast(item.file);
+            }
+
+            return result;
+        }
+    }
+
+    internal class Sub : File
+    {
+        public Sub(FileInfo file) : base(file)
+        {
+        }
+    }
+
+    internal class Video : File
+    {
+        public Video(FileInfo file) : base(file)
+        {
         }
     }
 
@@ -79,7 +104,7 @@ namespace SubRenamer
 
         public LinkedList<Video> videos = new LinkedList<Video>();
 
-        public LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+        public LinkedList<Sub> subs = new LinkedList<Sub>();
         //LinkedList<DirectoryInfo> directories = new LinkedList<DirectoryInfo>();
         public LinkedList<Names> names = new LinkedList<Names>();
         //private string v_left;
@@ -133,7 +158,7 @@ namespace SubRenamer
                         }
                         else if (Regex.IsMatch(item.Name, s_patt))
                         {
-                            _ = subs.AddLast(item);
+                            _ = subs.AddLast(new Sub(item));
                         }
                     }
 
@@ -167,7 +192,7 @@ namespace SubRenamer
                     }
                     else if (IsSub(item))
                     {
-                        _ = subs.AddLast(item);
+                        _ = subs.AddLast(new Sub(item));
                     }
                 }
                 if (recursion)
@@ -211,28 +236,27 @@ namespace SubRenamer
             return count;
         }
 
-        public LinkedList<FileInfo> GetVideoFileList()
-        {
-            LinkedList<FileInfo> res = new LinkedList<FileInfo>();
-            foreach (Video v in videos)
-            {
-                _ = res.AddLast(v.file);
-            }
-            return res;
-        }
+        // public LinkedList<FileInfo> GetVideoFileList()
+        // {
+        //     LinkedList<FileInfo> res = new LinkedList<FileInfo>();
+        //     foreach (Video v in videos)
+        //     {
+        //         _ = res.AddLast(v.file);
+        //     }
+        //     return res;
+        // }
+        
 
         public static string[] GetStrArray(LinkedList<Video> list)
         {
             string[] res = new string[list.Count];
-            LinkedListNode<Video> node = list.First;
-
-            for (int i = 0; i < list.Count; i++)
+            
+            int i = 0;
+            foreach (var item in list)
             {
-                res[i] = node.Value.file.Name;
-                node = node.Next;
+                res[i++] = item.file.Name;
             }
-
-
+            
             return res;
         }
 
