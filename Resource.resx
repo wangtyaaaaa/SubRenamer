@@ -117,4 +117,48 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="rename_complete" xml:space="preserve">
+    <value>修改完成</value>
+    <comment>修改完成</comment>
+  </data>
+  <data name="check_message" xml:space="preserve">
+    <value>确认信息</value>
+    <comment>确认信息</comment>
+  </data>
+  <data name="check_message_string" xml:space="preserve">
+    <value>执行前请先备份字幕文件，以免识别错误导致字幕文件混乱\n撤销功能只能撤销上一次改名结果\n本消息只提示一次</value>
+    <comment>checn_message_string</comment>
+  </data>
+  <data name="rgx_up" xml:space="preserve">
+    <value>正则↑</value>
+    <comment>rgx_up</comment>
+  </data>
+  <data name="rgx_down" xml:space="preserve">
+    <value>正则↓</value>
+    <comment>rgx_down</comment>
+  </data>
+  <data name="reslove_fail" xml:space="preserve">
+    <value>分析失败，不要问为什么，就是失败了</value>
+    <comment>reslove_fail</comment>
+  </data>
+  <data name="no_rename_record" xml:space="preserve">
+    <value>没有操作记录</value>
+    <comment>no_rename_record</comment>
+  </data>
+  <data name="revoke_successed" xml:space="preserve">
+    <value>撤销成功</value>
+    <comment>revoke_successed</comment>
+  </data>
+  <data name="revoke_fail" xml:space="preserve">
+    <value>撤销失败，重来吧</value>
+    <comment>revoke_fail</comment>
+  </data>
+  <data name="other_sub_filename" xml:space="preserve">
+    <value>不改名字幕文件</value>
+    <comment>other_sub_filename</comment>
+  </data>
+  <data name="pls_load_file" xml:space="preserve">
+    <value>请先获取文件</value>
+    <comment>pls_load_file</comment>
+  </data>
 </root>
