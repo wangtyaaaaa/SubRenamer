@@ -22,7 +22,7 @@ namespace SubRenamer
             {
                 Rename_Regex(names, bkWorker);
             }
-            else if (names.Reslovered)
+            else if (names.Resolved)
             {
                 Rename_Reslobered(names, bkWorker);
             }
@@ -37,16 +37,16 @@ namespace SubRenamer
             int c = 0;
             foreach (Video video in names.videos)
             {
-                bkWorker?.ReportProgress(++c, video.file.Name);
-                if (video.num != null && video.num != "")
+                bkWorker?.ReportProgress(++c, video.File.Name);
+                if (video.Num != null && video.Num != "")
                 {
                     // string num = video.num;
                     // if (num == null || num == "")
                     // {
                     //     continue;
                     // }
-                    LinkedList<FileInfo> subs = GetSubList(names, video.num);
-                    RenameSubs(video.file, subs, null);
+                    List<FileInfo> subs = GetSubList(names, video.Num);
+                    RenameSubs(video.File, subs, null);
                 }
             }
         }
@@ -56,14 +56,14 @@ namespace SubRenamer
             int c = count;
             foreach (Video video in names.videos)
             {
-                bkWorker.ReportProgress(++c, video.file.Name);
-                string num = GetVideoNumber(video.file);
+                bkWorker.ReportProgress(++c, video.File.Name);
+                string num = GetEpisodeNumber(video.File);
                 if (num == null)
                 {
                     continue;
                 }
-                LinkedList<FileInfo> subs = GetSubList(names, num);
-                RenameSubs(video.file, subs, null);
+                List<FileInfo> subs = GetSubList(names, num);
+                RenameSubs(video.File, subs, null);
 
             }
             foreach (Names name in names.names)
@@ -75,18 +75,18 @@ namespace SubRenamer
 
         private static void Rename_Regex(Names names, BackgroundWorker bkWorker)
         {
-            Dictionary<FileInfo, string> videoDic = GetDic(File.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = GetDic(File.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
+            Dictionary<FileInfo, string> videoDic = GetDic(VSFile.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
+            Dictionary<FileInfo, string> subDic = GetDic(VSFile.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
             int c = 0;
             foreach (FileInfo video in videoDic.Keys)
             {
                 bkWorker?.ReportProgress(++c, video.Name);
-                LinkedList<FileInfo> subs = GetSubList(subDic, videoDic[video]);
+                List<FileInfo> subs = GetSubList(subDic, videoDic[video]);
                 RenameSubs(video, subs, null);
             }
         }
 
-        internal static void RenameSubs(FileInfo video, LinkedList<FileInfo> subs, string delimiter)
+        internal static void RenameSubs(FileInfo video, List<FileInfo> subs, string delimiter)
         {
             string vname = GetFullNameWithOutExtension(video);
             foreach (FileInfo sub in subs)
@@ -151,7 +151,7 @@ namespace SubRenamer
             return redo.Count != 0;
         }
 
-        internal static Dictionary<FileInfo, string> GetDic(LinkedList<FileInfo> videos, string p)
+        internal static Dictionary<FileInfo, string> GetDic(List<FileInfo> videos, string p)
         {
             Dictionary<FileInfo, string> dic = new Dictionary<FileInfo, string>();
             foreach (FileInfo video in videos)
@@ -229,37 +229,37 @@ namespace SubRenamer
         /// <param name="names"></param>
         /// <param name="num">集号</param>
         /// <returns>字幕文件列表</returns>
-        internal static LinkedList<FileInfo> GetSubListByNum(Names names, string num)
+        internal static List<FileInfo> GetSubListByNum(Names names, string num)
         {
-            LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+            List<FileInfo> subs = new List<FileInfo>();
             foreach (Sub sub in names.subs)
             {
-                if(sub.num==num) subs.AddLast(sub.file);
+                if(sub.Num==num) subs.Add(sub.File);
             }
             return subs;
         }
 
-        internal static LinkedList<FileInfo> GetSubList(Names names, string num)
+        internal static List<FileInfo> GetSubList(Names names, string num)
         {
-            LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+            List<FileInfo> subs = new List<FileInfo>();
             foreach (Sub sub in names.subs)
             {
-                if (IsFit(sub.file, num))
+                if (IsFit(sub.File, num))
                 {
-                    subs.AddLast(sub.file);
+                    subs.Add(sub.File);
                 }
             }
             return subs;
         }
 
-        internal static LinkedList<FileInfo> GetSubList(Dictionary<FileInfo, string> subDic, string key)
+        internal static List<FileInfo> GetSubList(Dictionary<FileInfo, string> subDic, string key)
         {
-            LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+            List<FileInfo> subs = new List<FileInfo>();
             foreach (FileInfo sub in subDic.Keys)
             {
                 if (subDic[sub].Equals(key))
                 {
-                    _ = subs.AddLast(sub);
+                    subs.Add(sub);
                     // subDic.Remove(sub);
                 }
             }
@@ -268,7 +268,7 @@ namespace SubRenamer
 
         private static bool IsFit(FileInfo sub, string num)
         {
-            string subNum = GetVideoNumber(sub);
+            string subNum = GetEpisodeNumber(sub);
             if (subNum != null)
             {
                 if (subNum == num)
@@ -330,24 +330,118 @@ namespace SubRenamer
         }
 
 
+        ///// <summary>
+        ///// （重构后）提取文件名中所有匹配的数字字符串（和原GetVideoNumber算法一致）
+        ///// </summary>
+        ///// <param name="file">文件信息</param>
+        ///// <returns>匹配的数字字符串数组（无匹配返回空数组）</returns>
+        //public static string[] GetEpisodeNumberArray(FileInfo video)
+        //{
+        //    if (video == null || string.IsNullOrEmpty(video.Name))
+        //        return Array.Empty<string>();
+
+        //    var result = new List<string>(); ;
+        //    // 复用原GetVideoNumber的匹配逻辑，提取所有匹配项
+        //    List<string> strs = SplitFileNameWithoutExtension(video);
+        //    foreach (string str in strs)
+        //    {
+        //        string str2 = ResolveEpisodeNumber(str);
+
+        //        if (!float.TryParse(str2, out float f))
+        //        {
+        //            continue;
+        //        }
+
+        //        if (f < 0 || f > 1900)
+        //        {
+        //            continue;
+        //        }
+                
+
+        //        result.Add(str2);
+        //    }
+        //    return result.ToArray();
+        //}
+
         /// <summary>
-        /// （重构后）提取文件名中所有匹配的数字字符串（和原GetVideoNumber算法一致）
+        /// 判断str是不是疑似集号
         /// </summary>
-        /// <param name="file">文件信息</param>
-        /// <returns>匹配的数字字符串数组（无匹配返回空数组）</returns>
-        public static string[] GetVideoNumberArray(FileInfo video)
+        /// <param name="str"></param>
+        /// <returns></returns>
+        internal static bool IsLikelyEpisodeNumber(string str)
         {
-            if (video == null || string.IsNullOrEmpty(video.Name))
-                return Array.Empty<string>();
-            
-            var result = new List<string>(); ;
-            // 复用原GetVideoNumber的匹配逻辑，提取所有匹配项
+            string str2 = ResolveEpisodeNumber(str);
+
+            if (!float.TryParse(str2, out float f))
+            {
+                return false;
+            }
+
+            if (f < 0 || f > 1900)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static List<string> SplitFileNameWithoutExtension(FileInfo file)
+        {
+            var name = file.Name.Replace(file.Extension, "");
+            List<string> strs = Split(name);
+            return strs;
+        }
+
+
+        /// <summary>
+        /// 处理集号，去掉ep，第，集之类的字符，尽量保留纯数字
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        internal static string ResolveEpisodeNumber(string str)
+        {
+            string str2 = str;
+            while (str2.ToLower().Contains("Episode"))
+            {
+                char[] p = { 'p', 'P' };
+                int index = str2.IndexOfAny(p);
+                str2 = str2.Substring(index + 1);
+            }
+            while (str2.ToLower().Contains("ep"))
+            {
+                char[] p = { 'p', 'P' };
+                int index = str2.IndexOfAny(p);
+                str2 = str2.Substring(index + 1);
+            }
+
+            str2 = Regex.Replace(str2, regex_headAndTail, "");
+            return str2;
+        }
+
+        /// <summary>
+        /// 获取文件名中第一个疑似集号的部分
+        /// </summary>
+        /// <param name="video"></param>
+        /// <returns></returns>
+        internal static string GetEpisodeNumber(FileInfo video)
+        {
+            //var numbers = GetEpisodeNumberArray(video);
+            //return numbers.Length > 0 ? numbers[0] : null;
+
             string name = (string)video.Name.Clone();
             name = name.Replace(video.Extension, "");
-            LinkedList<string> strs = Split(name);
+            List<string> strs = Split(name);
             foreach (string str in strs)
             {
-                string str2 = ResloveTitleNumber(str);
+                string str2 = str;
+                while (str2.ToLower().Contains("ep"))
+                {
+                    char[] p = { 'p', 'P' };
+                    int index = str2.IndexOfAny(p);
+                    str2 = str2.Substring(index + 1);
+                }
+
+                str2 = Regex.Replace(str2, regex_headAndTail, "");
 
                 if (!float.TryParse(str2, out float f))
                 {
@@ -359,73 +453,16 @@ namespace SubRenamer
                     continue;
                 }
 
+                return str2;
 
-                result.Add(str2);
             }
-            return result.ToArray();
-        }
-
-
-        /// <summary>
-        /// 处理集号，去掉ep，第，集之类的字符，尽量保留纯数字
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        internal static string ResloveTitleNumber(string str)
-        {
-            string str2 = str;
-            while (str2.ToLower().Contains("ep"))
-            {
-                char[] p = { 'p', 'P' };
-                int index = str2.IndexOfAny(p);
-                str2 = str2.Substring(index + 1);
-            }
-
-            str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
-            return str2;
-        }
-
-        internal static string GetVideoNumber(FileInfo video)
-        {
-            var numbers = GetVideoNumberArray(video);
-            return numbers.Length > 0 ? numbers[0] : null;
-
-
-            //string name = (string)video.Name.Clone();
-            //name = name.Replace(video.Extension, "");
-            //LinkedList<string> strs = Split(name);
-            //foreach (string str in strs)
-            //{
-            //    string str2 = str;
-            //    while (str2.ToLower().Contains("ep"))
-            //    {
-            //        char[] p = { 'p', 'P' };
-            //        int index = str2.IndexOfAny(p);
-            //        str2 = str2.Substring(index + 1);
-            //    }
-
-            //    str2 = System.Text.RegularExpressions.Regex.Replace(str2, regex_headAndTail, "");
-
-            //    if (!float.TryParse(str2, out float f))
-            //    {
-            //        continue;
-            //    }
-
-            //    if (f < 0 || f > 1900)
-            //    {
-            //        continue;
-            //    }
-
-            //    return str2;
-
-            //}
-            //return null;
+            return null;
         }
 
         
-        public static LinkedList<string> Split(string name)
+        public static List<string> Split(string name)
         {
-            LinkedList<string> result = new LinkedList<string>();
+            List<string> result = new List<string>();
             string name2 = Replace(name);
             char[] ca = name2.ToCharArray();
             for (int i = 0; i < ca.Length; i++)
@@ -435,11 +472,11 @@ namespace SubRenamer
                     try
                     {
                         int end = FindMatchingPos(ca, i, ' ');
-                        _ = result.AddLast(name2.Substring(i + 1, end - i - 1));
+                        result.Add(name2.Substring(i + 1, end - i - 1));
                     }
                     catch
                     {
-                        _ = result.AddLast(name2.Substring(i));
+                        result.Add(name2.Substring(i));
                     }
                 }
             }

@@ -126,7 +126,7 @@
     <EmbeddedResource Include="Resource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resource.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>RES_STR</CustomToolNamespace>
+      <CustomToolNamespace>SubRenamer</CustomToolNamespace>
     </EmbeddedResource>
     <None Include="SubRenamer_TemporaryKey.pfx" />
   </ItemGroup>

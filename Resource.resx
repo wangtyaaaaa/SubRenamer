@@ -137,9 +137,9 @@
     <value>正则↓</value>
     <comment>rgx_down</comment>
   </data>
-  <data name="reslove_fail" xml:space="preserve">
+  <data name="resolve_fail" xml:space="preserve">
     <value>分析失败，不要问为什么，就是失败了</value>
-    <comment>reslove_fail</comment>
+    <comment>resolve_fail</comment>
   </data>
   <data name="no_rename_record" xml:space="preserve">
     <value>没有操作记录</value>

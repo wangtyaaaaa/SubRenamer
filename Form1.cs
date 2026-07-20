@@ -73,7 +73,7 @@ namespace SubRenamer
             InitializeComponent();
             textBox_path.Text = Environment.CurrentDirectory;
 #if DEBUG
-            this.textBox_path.Text = "D:\\anime\\[Kamigami&VCB-Studio] Yahari Ore no Seishun Lovecome wa Machigatte Iru. [Ma10p_1080p]";
+            this.textBox_path.Text = "C:\\aaa\\bbb";
 #endif         
             SetPanelRegexVisible(false);
             label_num_width = label_video_num.Width;
@@ -189,7 +189,7 @@ namespace SubRenamer
                     if (panel is Panel _p)
                     {
                         FileInfo video = null;
-                        LinkedList<FileInfo> subs = new LinkedList<FileInfo>();
+                        List<FileInfo> subs = new List<FileInfo>();
 
                         foreach (object var in _p.Controls)
                         {
@@ -203,7 +203,7 @@ namespace SubRenamer
                                     }
                                     else if (label.Name == NAME_SUB_LABEL)
                                     {
-                                        _ = subs.AddLast(_fi);
+                                        subs.Add(_fi);
                                     }
                                 }
                             }
@@ -357,16 +357,16 @@ namespace SubRenamer
             LoadNames(names);
         }
 
-        private void Button_Reslove_Click(object sender, EventArgs e)
+        private void Button_Resolve_Click(object sender, EventArgs e)
         {
-            if (names != null && NumberResolver.Reslove(names))
+            if (names != null && NumberResolver.Resolve(names))
             {
-                names.Reslovered = true;
+                names.Resolved = true;
                 LoadNames(names);
             }
             else
             {
-                _ = MessageBox.Show(Resource.reslove_fail);
+                _ = MessageBox.Show(Resource.resolve_fail);
             }
         }
 
@@ -405,7 +405,7 @@ namespace SubRenamer
             {
                 LoadNames_Regex(names);
             }
-            else if (names.Reslovered)
+            else if (names.Resolved)
             {
                 LoadNames_Reslobered(names);
             }
@@ -418,78 +418,82 @@ namespace SubRenamer
 
         private void LoadNames_normal(Names names)
         {
-            // ===== 步骤1.1：临时变量 - 提取视频列表，用于批量计算集号 =====
-            var videoList = names.videos.ToList();
+            NumberResolver.ResolveFileList(names.videos);
             // ===== 步骤1.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
             // var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
-            var tempVideo2DArray = NumberResolver.ExtractFileName2DArray(videoList);
+            //var tempVideo2DArray = NumberResolver.ExtractFileName2DArray(videoList);
             // ===== 步骤1.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
             // int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
-            int tempVideoColIdx = NumberResolver.FindHighestMODColumn(tempVideo2DArray);
+            //int tempVideoColIdx = NumberResolver.FindHighestMODColumn(videoList);
             // ========== 步骤1.4：计算每个视频的最终集号，存入names.videos.num ==========
-            for (int i = 0; i < videoList.Count; i++)
-            {
-                var video = videoList[i];
-                string finalEpisodeStr = null; // 默认无集号
-                // 仅当列索引有效，且当前视频行有该列数据时，计算集号
-                if (tempVideoColIdx >= 0)
-                {
-                    var episodeStrList = tempVideo2DArray[i];
-                    if (tempVideoColIdx < episodeStrList.Count)
-                    {
-                        // 直接取原始字符串集号，不转数字
-                        finalEpisodeStr = episodeStrList[tempVideoColIdx];
-                    }
-                }
-                // 仅存储最终集号到Names（临时变量丢弃）
-                video.num = finalEpisodeStr;
-            }
+            //for (int i = 0; i < videoList.Count; i++)
+            //{
+            //    var video = videoList[i];
+            //    string finalEpisodeStr = null; // 默认无集号
+            //    // 仅当列索引有效，且当前视频行有该列数据时，计算集号
+            //    if (tempVideoColIdx >= 0)
+            //    {
+            //        var episodeStrList = tempVideo2DArray[i];
+            //        if (tempVideoColIdx < episodeStrList.Count)
+            //        {
+            //            // 直接取原始字符串集号，不转数字
+            //            finalEpisodeStr = episodeStrList[tempVideoColIdx];
+            //        }
+            //    }
+            //    // 仅存储最终集号到Names（临时变量丢弃）
+            //    video.Num = finalEpisodeStr;
+            //}
 
-            // ===== 步骤2.1：临时变量 - 提取视频列表，用于批量计算集号 =====
-            var subList = names.subs.ToList();
-            // ===== 步骤2.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
-            // var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
-            var tempSub2DArray = NumberResolver.ExtractFileName2DArray(subList);
-            // ===== 步骤2.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
-            // int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
-            int tempSubColIdx = NumberResolver.FindHighestMODColumn(tempSub2DArray);
-            // ========== 步骤2.4：计算每个视频的最终集号，存入names.subs.num ==========
-            for (int i = 0; i < subList.Count; i++)
-            {
-                var sub = subList[i];
-                string finalEpisodeStr = null; // 默认无集号
-                // 仅当列索引有效，且当前视频行有该列数据时，计算集号
-                if (tempSubColIdx >= 0)
-                {
-                    var episodeStrList = tempSub2DArray[i];
-                    if (tempSubColIdx < episodeStrList.Count)
-                    {
-                        // 直接取原始字符串集号，不转数字
-                        finalEpisodeStr = episodeStrList[tempSubColIdx];
-                    }
-                }
-                // 仅存储最终集号到Names（临时变量丢弃）
-                sub.num = finalEpisodeStr;
-            }
+            NumberResolver.ResolveGroupFileList(names.subs, 0.6);
+            //// ===== 步骤2.1：临时变量 - 提取视频列表，用于批量计算集号 =====
+            //var subList = names.subs.ToList();
+            //// ===== 步骤2.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
+            //// var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
+            //var tempSub2DArray = NumberResolver.ExtractFileName2DArray(subList);
+            //// ===== 步骤2.3：临时变量 - 将二维数字数组分组（仅方法内使用） =====
+            //var tempGroupSubArray = NumberResolver.GroupFileName2DArray(tempSub2DArray);
+            //// ===== 步骤2.4：按组计算集号位置（仅方法内使用） =====
+            //NumberResolver.ResolveGroupFileArray(subList, tempGroupSubArray);
+            //// ===== 步骤2.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
+            //// int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
+            //int tempSubColIdx = NumberResolver.FindHighestMODColumn(tempSub2DArray);
+            //// ========== 步骤2.4：计算每个视频的最终集号，存入names.subs.num ==========
+            //for (int i = 0; i < subList.Count; i++)
+            //{
+            //    var sub = subList[i];
+            //    string finalEpisodeStr = null; // 默认无集号
+            //    // 仅当列索引有效，且当前视频行有该列数据时，计算集号
+            //    if (tempSubColIdx >= 0)
+            //    {
+            //        var episodeStrList = tempSub2DArray[i];
+            //        if (tempSubColIdx < episodeStrList.Count)
+            //        {
+            //            // 直接取原始字符串集号，不转数字
+            //            finalEpisodeStr = episodeStrList[tempSubColIdx];
+            //        }
+            //    }
+            //    // 仅存储最终集号到Names（临时变量丢弃）
+            //    sub.Num = finalEpisodeStr;
+            //}
 
 
             // ========== 步骤3：处理界面渲染（基于已有文件+新计算的集号） ==========
             panel_filelist.Controls.Clear();
-            var allSubs = File.FileListTOFileInfoList(names.subs); // 复制字幕列表，用于标记已匹配
+            var allSubs = VSFile.FileListTOFileInfoList(names.subs); // 复制字幕列表，用于标记已匹配
             // 渲染每个视频及匹配的字幕
-            foreach (File video in names.videos)
+            foreach (VSFile video in names.videos)
             {
                 // 从 video.num 读取原始集号字符串
-                string episodeNum = video.num;
+                string episodeNum = video.Num;
                 // 创建视频面板
                 Panel videoPanel = CreateNewChildPanel();
-                Label videoLabel = CreateNewFileLable(video.file.Name, NAME_VIDEO_LABEL, video.file);
+                Label videoLabel = CreateNewFileLable(video.File.Name, NAME_VIDEO_LABEL, video.File);
                 AddNewSubLable(videoPanel, videoLabel);
 
                 // 匹配字幕（复用原有GetSubList逻辑）
                 if (!string.IsNullOrEmpty(episodeNum))
                 {
-                    LinkedList<FileInfo> matchedSubs = Renamer.GetSubListByNum(names, episodeNum);
+                    List<FileInfo> matchedSubs = Renamer.GetSubListByNum(names, episodeNum);
                     foreach (FileInfo sub in matchedSubs)
                     {
                         Label subLabel = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
@@ -518,22 +522,22 @@ namespace SubRenamer
 
         private void LoadNames_Reslobered(Names names)
         {
-            LinkedList<FileInfo> allsubs = new LinkedList<FileInfo>();
-            foreach (File var in names.subs)
+            List<FileInfo> allsubs = new List<FileInfo>();
+            foreach (VSFile var in names.subs)
             {
-                _ = allsubs.AddLast(var.file);
+                allsubs.Add(var.File);
             }
 
             foreach (Video video in names.videos)
             {
-                string num = video.num;
+                string num = video.Num;
                 if (num == null || num == "")
                 {
                     continue;
                 }
-                LinkedList<FileInfo> subs = Renamer.GetSubList(names, num);
+                List<FileInfo> subs = Renamer.GetSubList(names, num);
                 Panel panel = CreateNewChildPanel();
-                Label label_v = CreateNewFileLable(video.file.Name, NAME_VIDEO_LABEL, video.file);
+                Label label_v = CreateNewFileLable(video.File.Name, NAME_VIDEO_LABEL, video.File);
                 AddNewSubLable(panel, label_v);
 
                 foreach (FileInfo sub in subs)
@@ -558,15 +562,15 @@ namespace SubRenamer
 
         private void LoadNames_Regex(Names names)
         {
-            LinkedList<FileInfo> allsubs = File.FileListTOFileInfoList(names.subs);
+            List<FileInfo> allsubs = VSFile.FileListTOFileInfoList(names.subs);
 
-            Dictionary<FileInfo, string> videoDic = Renamer.GetDic(File.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = Renamer.GetDic(File.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
+            Dictionary<FileInfo, string> videoDic = Renamer.GetDic(VSFile.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
+            Dictionary<FileInfo, string> subDic = Renamer.GetDic(VSFile.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
 
             foreach (FileInfo video in videoDic.Keys)
             {
                 Panel panel = CreateNewChildPanel();
-                LinkedList<FileInfo> subs = Renamer.GetSubList(subDic, videoDic[video]);
+                List<FileInfo> subs = Renamer.GetSubList(subDic, videoDic[video]);
                 Label label_v = CreateNewFileLable(video.Name, NAME_VIDEO_LABEL, video);
                 AddNewSubLable(panel, label_v);
                 foreach (FileInfo sub in subs)
@@ -743,7 +747,7 @@ namespace SubRenamer
         {
             panel.Controls.Remove(lable);
 
-            LinkedList<Label> list = new LinkedList<Label>();
+            List<Label> list = new List<Label>();
             Label video = null;
             
             foreach (object lab in panel.Controls)
@@ -752,7 +756,7 @@ namespace SubRenamer
                 {
                     if (_lab.Name == NAME_SUB_LABEL)
                     {
-                        _ = list.AddLast(_lab);
+                        list.Add(_lab);
                     }
                     else if (_lab.Name == NAME_VIDEO_LABEL)
                     {

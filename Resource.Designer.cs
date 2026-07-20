@@ -117,9 +117,9 @@ namespace SubRenamer {
         /// <summary>
         ///   查找类似 分析失败，不要问为什么，就是失败了 的本地化字符串。
         /// </summary>
-        internal static string reslove_fail {
+        internal static string resolve_fail {
             get {
-                return ResourceManager.GetString("reslove_fail", resourceCulture);
+                return ResourceManager.GetString("resolve_fail", resourceCulture);
             }
         }
         

@@ -52,61 +52,76 @@ namespace SubRenamer
         }
     }
 
-    internal class File
+    internal class VSFile
     {
-        public FileInfo file;
-        public string num { get; set; }
+        /// <summary>
+        /// 文件
+        /// </summary>
+        public FileInfo File { get; }
 
-        public File (FileInfo file)
+
+        /// <summary>
+        /// 打散的文件名
+        /// </summary>
+        public List<string> Splited_filename { get; }
+
+        /// <summary>
+        /// 集号
+        /// </summary>
+        public string Num { get; set; }
+
+        public VSFile(FileInfo file)
         {
-            this.file = file;
+            File = file;
+            Splited_filename = Renamer.SplitFileNameWithoutExtension(file);
         }
 
-        public static LinkedList<FileInfo> FileListTOFileInfoList<T> (IEnumerable<T> files) where T: File
+        public static List<FileInfo> FileListTOFileInfoList<T>(IEnumerable<T> files) where T : VSFile
         {
-            var result = new LinkedList<FileInfo>();
+            var result = new List<FileInfo>();
             foreach (var item in files)
             {
-                result.AddLast(item.file);
+                result.Add(item.File);
             }
 
             return result;
         }
     }
 
-    internal class Sub : File
+    internal class Sub : VSFile
     {
         public Sub(FileInfo file) : base(file)
         {
         }
     }
 
-    internal class Video : File
+    internal class Video : VSFile
     {
         public Video(FileInfo file) : base(file)
         {
         }
     }
 
+
     internal class Names
     {
         public bool IsRegex { get; }
-        public bool Reslovered { get; set; }
+        public bool Resolved { get; set; }
 
         public string path;
 
-     
+
 
         public string Video_Left { get; }
         public string Video_Right { get; }
         public string Sub_Left { get; }
         public string Sub_Right { get; }
 
-        public LinkedList<Video> videos = new LinkedList<Video>();
+        public List<Video> videos = new List<Video>();
 
-        public LinkedList<Sub> subs = new LinkedList<Sub>();
-        //LinkedList<DirectoryInfo> directories = new LinkedList<DirectoryInfo>();
-        public LinkedList<Names> names = new LinkedList<Names>();
+        public List<Sub> subs = new List<Sub>();
+        //List<DirectoryInfo> directories = new List<DirectoryInfo>();
+        public List<Names> names = new List<Names>();
         //private string v_left;
         //private string v_right;
         //private string s_left;
@@ -153,12 +168,12 @@ namespace SubRenamer
                         string name = item.Name;
                         if (Regex.IsMatch(item.Name, v_patt))
                         {
-                            _ = videos.AddLast(new Video(item));
+                            videos.Add(new Video(item));
                             // Regex.Replace(name, "(" + v_left + ")|(" + v_right + ")", "");
                         }
                         else if (Regex.IsMatch(item.Name, s_patt))
                         {
-                            _ = subs.AddLast(new Sub(item));
+                            subs.Add(new Sub(item));
                         }
                     }
 
@@ -188,11 +203,11 @@ namespace SubRenamer
                 {
                     if (IsVideo(item))
                     {
-                        _ = videos.AddLast(new Video(item));
+                        videos.Add(new Video(item));
                     }
                     else if (IsSub(item))
                     {
-                        _ = subs.AddLast(new Sub(item));
+                        subs.Add(new Sub(item));
                     }
                 }
                 if (recursion)
@@ -200,7 +215,7 @@ namespace SubRenamer
                     foreach (DirectoryInfo dir in dInfo.GetDirectories())
                     {
                         Names name = new Names(dir, true);
-                        _ = names.AddLast(name);
+                        names.Add(name);
                     }
                 }
             }
@@ -236,27 +251,27 @@ namespace SubRenamer
             return count;
         }
 
-        // public LinkedList<FileInfo> GetVideoFileList()
+        // public List<FileInfo> GetVideoFileList()
         // {
-        //     LinkedList<FileInfo> res = new LinkedList<FileInfo>();
+        //     List<FileInfo> res = new List<FileInfo>();
         //     foreach (Video v in videos)
         //     {
-        //         _ = res.AddLast(v.file);
+        //         _ = res.Add(v.file);
         //     }
         //     return res;
         // }
-        
 
-        public static string[] GetStrArray(LinkedList<Video> list)
+
+        public static string[] GetStrArray(List<Video> list)
         {
             string[] res = new string[list.Count];
-            
+
             int i = 0;
             foreach (var item in list)
             {
-                res[i++] = item.file.Name;
+                res[i++] = item.File.Name;
             }
-            
+
             return res;
         }
 

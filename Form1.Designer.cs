@@ -264,7 +264,7 @@ namespace SubRenamer
             resources.ApplyResources(this.button_resolve, "button_resolve");
             this.button_resolve.Name = "button_resolve";
             this.button_resolve.UseVisualStyleBackColor = true;
-            this.button_resolve.Click += new System.EventHandler(this.Button_Reslove_Click);
+            this.button_resolve.Click += new System.EventHandler(this.Button_Resolve_Click);
             // 
             // button_redo
             // 
