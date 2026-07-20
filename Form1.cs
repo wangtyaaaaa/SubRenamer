@@ -95,8 +95,8 @@ namespace SubRenamer
         {
             if (visible)
             {
-                panel_regex.Visible = true;//设置可见
                 tableLayoutPanel_ext.Visible = false;
+                panel_regex.Visible = true;//设置可见
 
                 panel_regex.Top = panel_path.Bottom + 3;
 
