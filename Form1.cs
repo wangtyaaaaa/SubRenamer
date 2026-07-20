@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Deployment.Application;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -65,6 +66,10 @@ namespace SubRenamer
 
         private static readonly Color COLOR_CHILD_PANAL_HIGHLIHGT = SystemColors.Highlight;
 
+        private static readonly Color COLOR_WARNING = Color.LightPink;
+
+        private static readonly Color COLOR_NORMAL = SystemColors.ControlLightLight;
+
         /// <summary>
         /// Form1初始化，隐藏panel_regex，设置lable_num_width
         /// </summary>
@@ -91,6 +96,10 @@ namespace SubRenamer
             if (visible)
             {
                 panel_regex.Visible = true;//设置可见
+                tableLayoutPanel_ext.Visible = false;
+
+                panel_regex.Top = panel_path.Bottom + 3;
+
                 panel_name.Top = panel_regex.Bottom;//设置panel_name的顶部位置
                 panel_name.Height = statusStrip1.Top - panel_name.Top;//设置panel_name的高度
                 Reset_regex_size();
@@ -98,7 +107,8 @@ namespace SubRenamer
             else
             {
                 panel_regex.Visible = false;
-                panel_name.Top = panel_path.Bottom;
+                tableLayoutPanel_ext.Visible = true;
+                panel_name.Top = tableLayoutPanel_ext.Bottom + 3;
                 panel_name.Height = statusStrip1.Top - panel_name.Top;
             }
         }
@@ -254,7 +264,7 @@ namespace SubRenamer
         {
             SetPanelRegexVisible(!panel_regex.Visible);
             SetExtText_BoxVisable(!panel_regex.Visible);
-            button_regex_panel.Text = panel_regex.Visible == false ? Resource.rgx_down :Resource.rgx_up;
+            button_regex_panel.Text = panel_regex.Visible == false ? Resource.rgx_down : Resource.rgx_up;
         }
 
 
@@ -444,7 +454,8 @@ namespace SubRenamer
             //    video.Num = finalEpisodeStr;
             //}
 
-            NumberResolver.ResolveGroupFileList(names.subs, 0.6);
+            double.TryParse(textBox_min_match_rate.Text, out double _r);
+            NumberResolver.ResolveGroupFileList(names.subs, _r);
             //// ===== 步骤2.1：临时变量 - 提取视频列表，用于批量计算集号 =====
             //var subList = names.subs.ToList();
             //// ===== 步骤2.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
@@ -712,10 +723,10 @@ namespace SubRenamer
                     //}
                     //else if (_lab.Name == NAME_SUB_LABEL)
                     //{
-                        if (buttom < _lab.Bottom)
-                        {
-                            buttom = _lab.Bottom;
-                        }
+                    if (buttom < _lab.Bottom)
+                    {
+                        buttom = _lab.Bottom;
+                    }
                     //}
                 }
             }
@@ -749,7 +760,7 @@ namespace SubRenamer
 
             List<Label> list = new List<Label>();
             Label video = null;
-            
+
             foreach (object lab in panel.Controls)
             {
                 if (lab is Label _lab)
@@ -832,7 +843,7 @@ namespace SubRenamer
             {
                 return null;
             }
-            
+
         }
 
         private void SubLable_MouseMove(object sender, MouseEventArgs e)
@@ -954,7 +965,7 @@ namespace SubRenamer
             }
         }
 
-        
+
 
         private void TextBox_videoExt_TextChanged(object sender, EventArgs e)
         {
@@ -972,6 +983,49 @@ namespace SubRenamer
         {
             textBox_subExt.Visible = visable;
             textBox_videoExt.Visible = visable;
+        }
+
+        private void textBox_checkNum(object sender, EventArgs e)
+        {
+            if (sender is TextBox _s)
+            {
+                if (!CheckInputNumberRange(_s, 0, 1))
+                    _s.BackColor = COLOR_WARNING;
+                else
+                    _s.BackColor = COLOR_NORMAL;
+            }
+        }
+
+        private bool CheckInputNumberRange(TextBox s, double min, double max)
+        {
+            string input = s.Text;
+            // 判空
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+
+            if (!double.TryParse(input, out double num))
+            {
+                return false;
+            }
+
+            if (num < min || num > max)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        private void onKeyDown_LoseFocus(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                // 原生属性，移除焦点
+                this.ActiveControl = null;
+            }
         }
     }
 }

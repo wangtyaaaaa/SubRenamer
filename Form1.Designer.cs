@@ -41,10 +41,17 @@ namespace SubRenamer
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.panel_root = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel_ext = new System.Windows.Forms.TableLayoutPanel();
+            this.textBox_videoExt = new System.Windows.Forms.TextBox();
+            this.textBox_subExt = new System.Windows.Forms.TextBox();
+            this.textBox_min_match_rate = new System.Windows.Forms.TextBox();
+            this.label_video_ext = new System.Windows.Forms.Label();
+            this.label_sub_ext = new System.Windows.Forms.Label();
+            this.label_min_match_rate = new System.Windows.Forms.Label();
             this.panel_regex = new System.Windows.Forms.Panel();
             this.button_autotransfer = new System.Windows.Forms.Button();
             this.groupBox_sub = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel_sub = new System.Windows.Forms.TableLayoutPanel();
             this.textBox_sub_left = new System.Windows.Forms.TextBox();
             this.label_sub_num = new System.Windows.Forms.Label();
             this.textBox_sub_right = new System.Windows.Forms.TextBox();
@@ -56,8 +63,6 @@ namespace SubRenamer
             this.panel_name = new System.Windows.Forms.Panel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.button_name2 = new System.Windows.Forms.Button();
-            this.textBox_subExt = new System.Windows.Forms.TextBox();
-            this.textBox_videoExt = new System.Windows.Forms.TextBox();
             this.button_regex_panel = new System.Windows.Forms.Button();
             this.button_resolve = new System.Windows.Forms.Button();
             this.button_redo = new System.Windows.Forms.Button();
@@ -68,9 +73,10 @@ namespace SubRenamer
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.statusStrip1.SuspendLayout();
             this.panel_root.SuspendLayout();
+            this.tableLayoutPanel_ext.SuspendLayout();
             this.panel_regex.SuspendLayout();
             this.groupBox_sub.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel_sub.SuspendLayout();
             this.groupBox_video.SuspendLayout();
             this.tableLayoutPanel_video.SuspendLayout();
             this.panel_name.SuspendLayout();
@@ -132,10 +138,59 @@ namespace SubRenamer
             // panel_root
             // 
             resources.ApplyResources(this.panel_root, "panel_root");
+            this.panel_root.Controls.Add(this.tableLayoutPanel_ext);
             this.panel_root.Controls.Add(this.panel_regex);
             this.panel_root.Controls.Add(this.panel_name);
             this.panel_root.Controls.Add(this.panel_path);
             this.panel_root.Name = "panel_root";
+            // 
+            // tableLayoutPanel_ext
+            // 
+            resources.ApplyResources(this.tableLayoutPanel_ext, "tableLayoutPanel_ext");
+            this.tableLayoutPanel_ext.Controls.Add(this.textBox_videoExt, 1, 0);
+            this.tableLayoutPanel_ext.Controls.Add(this.textBox_subExt, 3, 0);
+            this.tableLayoutPanel_ext.Controls.Add(this.textBox_min_match_rate, 5, 0);
+            this.tableLayoutPanel_ext.Controls.Add(this.label_video_ext, 0, 0);
+            this.tableLayoutPanel_ext.Controls.Add(this.label_sub_ext, 2, 0);
+            this.tableLayoutPanel_ext.Controls.Add(this.label_min_match_rate, 4, 0);
+            this.tableLayoutPanel_ext.Name = "tableLayoutPanel_ext";
+            // 
+            // textBox_videoExt
+            // 
+            resources.ApplyResources(this.textBox_videoExt, "textBox_videoExt");
+            this.textBox_videoExt.Name = "textBox_videoExt";
+            this.toolTip1.SetToolTip(this.textBox_videoExt, resources.GetString("textBox_videoExt.ToolTip"));
+            this.textBox_videoExt.TextChanged += new System.EventHandler(this.TextBox_videoExt_TextChanged);
+            // 
+            // textBox_subExt
+            // 
+            resources.ApplyResources(this.textBox_subExt, "textBox_subExt");
+            this.textBox_subExt.Name = "textBox_subExt";
+            this.toolTip1.SetToolTip(this.textBox_subExt, resources.GetString("textBox_subExt.ToolTip"));
+            this.textBox_subExt.TextChanged += new System.EventHandler(this.TextBox_subExt_TextChanged);
+            // 
+            // textBox_min_match_rate
+            // 
+            resources.ApplyResources(this.textBox_min_match_rate, "textBox_min_match_rate");
+            this.textBox_min_match_rate.Name = "textBox_min_match_rate";
+            this.toolTip1.SetToolTip(this.textBox_min_match_rate, resources.GetString("textBox_min_match_rate.ToolTip"));
+            this.textBox_min_match_rate.KeyDown += new System.Windows.Forms.KeyEventHandler(this.onKeyDown_LoseFocus);
+            this.textBox_min_match_rate.Leave += new System.EventHandler(this.textBox_checkNum);
+            // 
+            // label_video_ext
+            // 
+            resources.ApplyResources(this.label_video_ext, "label_video_ext");
+            this.label_video_ext.Name = "label_video_ext";
+            // 
+            // label_sub_ext
+            // 
+            resources.ApplyResources(this.label_sub_ext, "label_sub_ext");
+            this.label_sub_ext.Name = "label_sub_ext";
+            // 
+            // label_min_match_rate
+            // 
+            resources.ApplyResources(this.label_min_match_rate, "label_min_match_rate");
+            this.label_min_match_rate.Name = "label_min_match_rate";
             // 
             // panel_regex
             // 
@@ -155,17 +210,17 @@ namespace SubRenamer
             // groupBox_sub
             // 
             resources.ApplyResources(this.groupBox_sub, "groupBox_sub");
-            this.groupBox_sub.Controls.Add(this.tableLayoutPanel1);
+            this.groupBox_sub.Controls.Add(this.tableLayoutPanel_sub);
             this.groupBox_sub.Name = "groupBox_sub";
             this.groupBox_sub.TabStop = false;
             // 
-            // tableLayoutPanel1
+            // tableLayoutPanel_sub
             // 
-            resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
-            this.tableLayoutPanel1.Controls.Add(this.textBox_sub_left, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label_sub_num, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.textBox_sub_right, 2, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            resources.ApplyResources(this.tableLayoutPanel_sub, "tableLayoutPanel_sub");
+            this.tableLayoutPanel_sub.Controls.Add(this.textBox_sub_left, 0, 0);
+            this.tableLayoutPanel_sub.Controls.Add(this.label_sub_num, 1, 0);
+            this.tableLayoutPanel_sub.Controls.Add(this.textBox_sub_right, 2, 0);
+            this.tableLayoutPanel_sub.Name = "tableLayoutPanel_sub";
             // 
             // textBox_sub_left
             // 
@@ -223,9 +278,7 @@ namespace SubRenamer
             // 
             resources.ApplyResources(this.tableLayoutPanel2, "tableLayoutPanel2");
             this.tableLayoutPanel2.Controls.Add(this.button_name2, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.textBox_subExt, 3, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_doRename, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.textBox_videoExt, 2, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_regex_panel, 6, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_resolve, 5, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_redo, 4, 0);
@@ -237,20 +290,6 @@ namespace SubRenamer
             this.button_name2.Name = "button_name2";
             this.button_name2.UseVisualStyleBackColor = true;
             this.button_name2.Click += new System.EventHandler(this.Button_name2_Click);
-            // 
-            // textBox_subExt
-            // 
-            resources.ApplyResources(this.textBox_subExt, "textBox_subExt");
-            this.textBox_subExt.Name = "textBox_subExt";
-            this.toolTip1.SetToolTip(this.textBox_subExt, resources.GetString("textBox_subExt.ToolTip"));
-            this.textBox_subExt.TextChanged += new System.EventHandler(this.TextBox_subExt_TextChanged);
-            // 
-            // textBox_videoExt
-            // 
-            resources.ApplyResources(this.textBox_videoExt, "textBox_videoExt");
-            this.textBox_videoExt.Name = "textBox_videoExt";
-            this.toolTip1.SetToolTip(this.textBox_videoExt, resources.GetString("textBox_videoExt.ToolTip"));
-            this.textBox_videoExt.TextChanged += new System.EventHandler(this.TextBox_videoExt_TextChanged);
             // 
             // button_regex_panel
             // 
@@ -310,16 +349,17 @@ namespace SubRenamer
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.panel_root.ResumeLayout(false);
+            this.tableLayoutPanel_ext.ResumeLayout(false);
+            this.tableLayoutPanel_ext.PerformLayout();
             this.panel_regex.ResumeLayout(false);
             this.groupBox_sub.ResumeLayout(false);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
+            this.tableLayoutPanel_sub.ResumeLayout(false);
+            this.tableLayoutPanel_sub.PerformLayout();
             this.groupBox_video.ResumeLayout(false);
             this.tableLayoutPanel_video.ResumeLayout(false);
             this.tableLayoutPanel_video.PerformLayout();
             this.panel_name.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
-            this.tableLayoutPanel2.PerformLayout();
             this.panel_path.ResumeLayout(false);
             this.panel_path.PerformLayout();
             this.ResumeLayout(false);
@@ -362,9 +402,14 @@ namespace SubRenamer
         private TableLayoutPanel tableLayoutPanel_video;
         private TextBox textBox_video_left;
         private Label label_video_num;
-        private TableLayoutPanel tableLayoutPanel1;
+        private TableLayoutPanel tableLayoutPanel_sub;
         private TextBox textBox_video_right;
         private TableLayoutPanel tableLayoutPanel2;
+        private TableLayoutPanel tableLayoutPanel_ext;
+        private Label label_video_ext;
+        private Label label_sub_ext;
+        private Label label_min_match_rate;
+        private TextBox textBox_min_match_rate;
     }
 }
 
