@@ -73,7 +73,7 @@ namespace SubRenamer
         public VSFile(FileInfo file)
         {
             File = file;
-            Splited_filename = Renamer.SplitFileNameWithoutExtension(file);
+            Splited_filename = Renamer.SplitFileNameForGrouping(file);
         }
 
         public static List<FileInfo> FileListTOFileInfoList<T>(IEnumerable<T> files) where T : VSFile

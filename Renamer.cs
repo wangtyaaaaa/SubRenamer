@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace SubRenamer
 {
@@ -146,7 +145,7 @@ namespace SubRenamer
             return true;
         }
 
-        public static bool IsRedoAvailable()
+        public static bool IsRedoAvailabel()
         {
             return redo.Count != 0;
         }
@@ -157,7 +156,7 @@ namespace SubRenamer
             foreach (FileInfo video in videos)
             {
                 string name = video.Name;
-                string str = System.Text.RegularExpressions.Regex.Replace(name, p, "");
+                string str = Regex.Replace(name, p, "");
                 dic.Add(video, str);
             }
             return dic;
@@ -178,13 +177,13 @@ namespace SubRenamer
         }
 
 
-        private static string GetFullExtension(FileInfo sub,string delimiter)
+        private static string GetFullExtension(FileInfo sub, string delimiter)
         {
-            if (delimiter == null|| delimiter.Length==0)
+            if (delimiter == null || delimiter.Length == 0)
                 return GetFullExtension(sub);
             string name = sub.Name.Trim();
             int index = name.LastIndexOf(delimiter[0]);
-            if(index == -1)
+            if (index == -1)
                 return GetFullExtension(sub);
             return name.Substring(index);
         }
@@ -213,7 +212,7 @@ namespace SubRenamer
                     return name.Substring(index[i]);
                 }
                 string ext = name.Substring(index[i]);
-                string ext2 = System.Text.RegularExpressions.Regex.Replace(ext, regex, "");
+                string ext2 = Regex.Replace(ext, regex, "");
                 if (ext == ext2)
                 {
                     return ext;
@@ -234,7 +233,7 @@ namespace SubRenamer
             List<FileInfo> subs = new List<FileInfo>();
             foreach (Sub sub in names.subs)
             {
-                if(sub.Num==num) subs.Add(sub.File);
+                if (sub.Num == num) subs.Add(sub.File);
             }
             return subs;
         }
@@ -275,15 +274,20 @@ namespace SubRenamer
                 {
                     return true;
                 }
-                else if (float.Parse(subNum) == float.Parse(num))
+                //else if (double.Parse(subNum) == double.Parse(num))
+                //{
+                //    return true;
+                //}
+                else if (double.TryParse(subNum, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double d1) &&
+         double.TryParse(num, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double d2))
                 {
-                    return true;
+                    if (d1 == d2) return true;
                 }
             }
             else
             {
                 string name = sub.Name.Replace(sub.Extension, "");
-                name = System.Text.RegularExpressions.Regex.Replace(name, regex, "");
+                name = Regex.Replace(name, regex, "");
                 if (IsFitNum(name, num))
                 {
                     return true;
@@ -356,7 +360,7 @@ namespace SubRenamer
         //        {
         //            continue;
         //        }
-                
+
 
         //        result.Add(str2);
         //    }
@@ -372,7 +376,7 @@ namespace SubRenamer
         {
             string str2 = ResolveEpisodeNumber(str);
 
-            if (!float.TryParse(str2, out float f))
+            if (!double.TryParse(str2, out double f))
             {
                 return false;
             }
@@ -391,6 +395,78 @@ namespace SubRenamer
             List<string> strs = Split(name);
             return strs;
         }
+
+        /// <summary>
+        /// 将文件名打散用于分组计算集号位置，比Split方法打的更细碎
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        internal static List<string> SplitFileNameForGrouping(FileInfo file)
+        {
+            var filename = file.Name.Replace(file.Extension, "");
+            List<string> result = new List<string>();
+            StringBuilder current = new StringBuilder();
+
+            for (int i = 0; i < filename.Length; i++)
+            {
+                char c = filename[i];
+
+                // 【新增拦截器】如果是小数点（前是数字，后也是数字），直接“吃掉”它和下一个字符
+                if (c == '.' && current.Length > 0 && i + 1 < filename.Length)
+                {
+                    bool prevIsDigit = char.IsDigit(current[current.Length - 1]);
+                    bool nextIsDigit = char.IsDigit(filename[i + 1]);
+
+                    if (prevIsDigit && nextIsDigit)
+                    {
+                        current.Append(c);           // 加入 '.'
+                        current.Append(filename[i + 1]); // 加入下一个数字
+                        i++;                         // 索引跳过下一个字符
+                        continue;                    // 直接进入下一次循环
+                    }
+                }
+
+                // --- 以下是你原有的逻辑，一行都不用改 ---
+
+                // 原有的分隔符判断
+                if (c == ' ' || c == '.' || c == '_' || c == '-' ||
+                    c == '[' || c == ']' || c == '(' || c == ')' ||
+                    c == '{' || c == '}')
+                {
+                    if (current.Length > 0)
+                    {
+                        result.Add(current.ToString());
+                        current.Clear();
+                    }
+                }
+                else
+                {
+                    // 检测数字与非数字的边界
+                    if (current.Length > 0)
+                    {
+                        bool lastIsDigit = char.IsDigit(current[current.Length - 1]);
+                        bool currentIsDigit = char.IsDigit(c);
+
+                        // 如果上一个字符是数字而当前不是，或者上一个不是数字而当前是，则分割
+                        if (lastIsDigit != currentIsDigit)
+                        {
+                            result.Add(current.ToString());
+                            current.Clear();
+                        }
+                    }
+                    current.Append(c);
+                }
+            }
+
+            // 添加最后一个片段
+            if (current.Length > 0)
+            {
+                result.Add(current.ToString());
+            }
+
+            return result;
+        }
+
 
 
         /// <summary>
@@ -459,7 +535,7 @@ namespace SubRenamer
             return null;
         }
 
-        
+
         public static List<string> Split(string name)
         {
             List<string> result = new List<string>();
@@ -492,7 +568,7 @@ namespace SubRenamer
             s = s.Replace('{', ' ');
             s = s.Replace('}', ' ');
             //s = s.Replace('.', ' ');
-            s = System.Text.RegularExpressions.Regex.Replace(s, "[\\s]+", " ");
+            s = Regex.Replace(s, "[\\s]+", " ");
             return s;
         }
 
@@ -538,7 +614,5 @@ namespace SubRenamer
             }
             throw new Exception("cannot find matching pos");
         }
-
-
     }
 }

@@ -7,12 +7,12 @@ namespace SubRenamer
     internal class NumberResolver
     {
 
-        private class VSFileGroupItem<T> where T : VSFile
+        private class VSFileGroup<T> where T : VSFile
         {
             /// <summary>
             /// 文件列表
             /// </summary>
-            public List<VSFile> FileList { get; }
+            public List<T> FileList { get; }
 
             /// <summary>
             /// 这组文件中疑似集号的位置
@@ -20,9 +20,9 @@ namespace SubRenamer
             public List<int> LikelyEpNumPos { get; }
 
 
-            public VSFileGroupItem(T t)
+            public VSFileGroup(T t)
             {
-                FileList = new List<VSFile>();
+                FileList = new List<T>();
                 AddVSFile(t);
                 LikelyEpNumPos = GetLikelyEpNumPos(t.Splited_filename);
             }
@@ -31,7 +31,7 @@ namespace SubRenamer
             /// 添加一个文件
             /// </summary>
             /// <param name="file"></param>
-            public void AddVSFile(VSFile file)
+            public void AddVSFile(T file)
             {
                 FileList.Add(file);
             }
@@ -132,7 +132,7 @@ namespace SubRenamer
         /// <exception cref="NotImplementedException"></exception>
         internal static void ResolveGroupFileList<T>(List<T> files, double min_match_rate) where T : VSFile
         {
-            List<VSFileGroupItem<T>> group = GroupVSFiles(files, min_match_rate);
+            List<VSFileGroup<T>> group = GroupVSFiles(files, min_match_rate);
             foreach (var item in group)
             {
                 ResolveFileList(item.FileList);
@@ -145,59 +145,80 @@ namespace SubRenamer
         /// <typeparam name="T"></typeparam>
         /// <param name="files"></param>
         /// <returns></returns>
-        private static List<VSFileGroupItem<T>> GroupVSFiles<T>(List<T> files, double min_match_rate) where T : VSFile
+        private static List<VSFileGroup<T>> GroupVSFiles<T>(List<T> files, double min_match_rate) where T : VSFile
         {
-            List<VSFileGroupItem<T>> result = new List<VSFileGroupItem<T>>();
+            List<VSFileGroup<T>> result = new List<VSFileGroup<T>>();
 
+            if (files.Count <= 0)
+            {
+                return result;
+            }
             //将第一个文件创建为第一组的第一个元素
-            var item = new VSFileGroupItem<T>(files[0]);
-            result.Add(item);
+            var firstGroup = new VSFileGroup<T>(files[0]);
+            result.Add(firstGroup);
 
-            //从第二给文件开始遍历
+
+            if (files.Count <= 1)
+            {
+                return result;
+            }
+
+            //从第二个文件开始遍历
             for (int i = 1; i < files.Count; i++)
             {
-                var _a = files[i].Splited_filename;
+                var curr_file = files[i];
+                var curr_splited_name = curr_file.Splited_filename;
+                double curr_splited_name_length = 0;
+                foreach (var item in curr_splited_name)
+                {
+                    curr_splited_name_length += item.Length;
+                }
 
-                double match_rate = 0; //匹配度 = 对应位置相对元素数 / 总元素数
-                int match_group = -1; //匹配组
+                double match_group_rate = 0; //匹配度 = 对应位置相对元素数 / 总元素数
+                int match_group_num = -1; //匹配组
 
                 for (int g_num = 0; g_num < result.Count; g_num++)
                 {
                     var _group = result[g_num];
                     //取第一个元素
-                    var _f = _group.FileList[0].Splited_filename;
+                    var group_head_file = _group.FileList[0];
+                    var group_head_splited_name = group_head_file.Splited_filename;
 
-                    int __a = _f.Count - _a.Count;
-                    if (__a < 3 && __a > -3)        //拆分出的文件名长度大致相等
+                    int __a = group_head_splited_name.Count - curr_splited_name.Count;
+                    if (__a < 2 && __a > -2)        //拆分出的文件名长度大致相等
                     {
-                        double match_count = 0; //对应位置相对元素数
-                        for (int col = 0; col < _a.Count; col++)
+                        double total_match_rate = 0; //对应位置相对元素数
+                        for (int col = 0; col < curr_splited_name.Count; col++)
                         {
-                            if (col < _f.Count)
-                                if (_a[col] == _f[col]) match_count++;
+                            if (col < group_head_splited_name.Count)
+                            {
+                                double _rate;
+                                if (curr_splited_name[col] == group_head_splited_name[col]) _rate = 1;
+                                else _rate = CalculateWeightedSimilarity(curr_splited_name[col], group_head_splited_name[col]);
+                                total_match_rate += _rate * curr_splited_name[col].Length / curr_splited_name_length;
+                            }
                         }
 
-                        double _mr = match_count / _f.Count;
-                        if (_mr >= min_match_rate)
+                        if (total_match_rate >= min_match_rate)
                         {
-                            var _pos1 = GetLikelyEpNumPos(_a);
+                            var _pos1 = GetLikelyEpNumPos(curr_splited_name);
                             var _pos2 = _group.LikelyEpNumPos;
-                            if (_pos1.SequenceEqual(_pos2) && _mr > match_rate)
+                            if (_pos1.SequenceEqual(_pos2) && total_match_rate > match_group_rate)
                             {
-                                match_rate = _mr;
-                                match_group = g_num;
+                                match_group_rate = total_match_rate;
+                                match_group_num = g_num;
                             }
                         }
                     }
                 }
 
-                if (match_group >= 0)
+                if (match_group_num >= 0)
                 {
-                    result[match_group].AddVSFile(files[i]);
+                    result[match_group_num].AddVSFile(files[i]);
                 }
                 else
                 {
-                    var _item = new VSFileGroupItem<T>(files[i]);
+                    var _item = new VSFileGroup<T>(files[i]);
                     result.Add(_item);
                 }
             }
@@ -216,7 +237,7 @@ namespace SubRenamer
             if (files == null || files.Count == 0) return false;
 
             // 如果只有一个文件，调用单文件提取集号方法
-            if(files.Count <= 1) // 可以调整单文件/一组方法的数量边界
+            if (files.Count <= 1) // 可以调整单文件/一组方法的数量边界
             {
                 foreach (var item in files)
                 {
@@ -266,6 +287,243 @@ namespace SubRenamer
             }
 
             return true;
+        }
+
+
+
+        /// <summary>
+        /// 计算两个字符串的加权相似度。
+        /// 规则：优先计算公共前缀（权重1.0）。如果没有公共前缀，则权重依次递补。
+        /// </summary>
+        /// <param name="s1">第一个字符串</param>
+        /// <param name="s2">第二个字符串</param>
+        /// <returns>加权相似度分数 (0.0 ~ 1.0)</returns>
+        private static double CalculateWeightedSimilarity(string s1, string s2)
+        {
+            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+                return 0.0;
+
+            // 1. 计算公共前缀
+            int prefixLen = 0;
+            for (int i = 0; i < Math.Min(s1.Length, s2.Length); i++)
+            {
+                if (s1[i] == s2[i])
+                    prefixLen++;
+                else
+                    break;
+            }
+
+
+
+            // 2. 计算第一长和第二长的公共子串 (排除公共前缀)
+            int lcs1Len;
+
+            int lcs2Len;
+            // 如果有公共前缀，我们只在前缀之后的部分寻找子串
+            if (prefixLen > 0)
+            {
+                string suffix1 = s1.Substring(prefixLen);
+                string suffix2 = s2.Substring(prefixLen);
+                (lcs1Len, lcs2Len) = FindTopTwoLCS_Optimized(suffix1, suffix2);
+            }
+            else // 如果没有公共前缀，就在整个字符串中寻找
+            {
+                (lcs1Len, lcs2Len) = FindTopTwoLCS_Optimized(s1, s2);
+            }
+
+            // 3. 根据规则应用权重
+            double totalWeight = 0;
+            double maxPossibleWeight = Math.Max(s1.Length, s2.Length);
+
+            if (prefixLen > 0)
+            {
+                // 规则: 有前缀时，权重为 1.0, 0.7, 0.4
+                totalWeight += 1.0 * prefixLen;
+                totalWeight += 0.7 * lcs1Len;
+                totalWeight += 0.4 * lcs2Len;
+            }
+            else
+            {
+                // 规则: 无前缀时，第一长子串权重变为1.0，依次递补
+                totalWeight += 1.0 * lcs1Len;
+                totalWeight += 0.7 * lcs2Len;
+            }
+
+            // 4. 计算并返回归一化的相似度分数
+            return totalWeight / maxPossibleWeight;
+        }
+
+        /// <summary>
+        /// 找出两个字符串中第一长和第二长的公共子串的长度（最小长度>=3），
+        /// 且保证两者在原字符串s1和s2中均无交集（完全独立）。
+        /// </summary>
+        private static (int, int) FindTopTwoLCS_Optimized(string s1, string s2)
+        {
+            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+                return (0, 0);
+
+            int m = s1.Length;
+            int n = s2.Length;
+            const int MIN_LEN = 3; // 【补回】最小长度阈值
+
+            if (m < MIN_LEN || n < MIN_LEN)
+                return (0, 0);
+
+            // 【修改】收集所有“极大公共子串”，现在需要同时记录在 s1 和 s2 中的起始位置
+            var maximalSubstrings = new List<(int start1, int start2, int len)>();
+
+            // 【修改】记录当前的 Top 2 完整信息（包含双轨位置和长度），用于剪枝和重叠判断
+            (int start1, int start2, int len) top1 = (-1, -1, 0);
+            (int start1, int start2, int len) top2 = (-1, -1, 0);
+
+            // 局部函数：沿着一条对角线斜向对比
+            void ScanDiagonal(int startI, int startJ, int diagLength)
+            {
+                // 如果对角线总长度连最小阈值都达不到，或者连当前的“第二名”都超不过，直接跳过！
+                if (diagLength < MIN_LEN) return;
+                if (top2.len > 0 && diagLength <= top2.len) return;
+
+                int i = startI, j = startJ;
+                int currentLen = 0;
+                // 同时记录在 s1 和 s2 中的起始位置
+                int currentStartI = -1, currentStartJ = -1;
+
+                while (i < m && j < n)
+                {
+                    if (s1[i] == s2[j])
+                    {
+                        if (currentLen == 0)
+                        {
+                            currentStartI = i;
+                            currentStartJ = j;
+                        }
+                        currentLen++;
+                    }
+                    else if (currentLen > 0)
+                    {
+                        // 只有达到最小长度的子串才进行收割和记录
+                        if (currentLen >= MIN_LEN)
+                        {
+                            TryUpdateTopTwo(currentStartI, currentStartJ, currentLen);
+                            maximalSubstrings.Add((currentStartI, currentStartJ, currentLen));
+                        }
+                        currentLen = 0;
+
+                        // 动态剪枝：如果当前断开了，剩下的长度已经不足以超越 top2 或 MIN_LEN，提前结束本条对角线
+                        int remainingLength = Math.Min(m - i, n - j);
+                        if (remainingLength < MIN_LEN || (top2.len > 0 && remainingLength <= top2.len)) break;
+                    }
+                    i++; j++;
+                }
+
+                // 收割对角线末尾的子串
+                if (currentLen >= MIN_LEN) // 【补回】最小长度检查
+                {
+                    TryUpdateTopTwo(currentStartI, currentStartJ, currentLen);
+                    maximalSubstrings.Add((currentStartI, currentStartJ, currentLen));
+                }
+            }
+
+            // 【核心重构】状态机式更新 Top 2，严格保证双轨独立
+            void TryUpdateTopTwo(int start1, int start2, int len)
+            {
+                var candidate = (start1, start2, len);
+
+                if (len > top1.len)
+                {
+                    // ================= 场景 A：新来的比老大长，直接当新老大 =================
+                    var old1 = top1;
+                    var old2 = top2;
+
+                    // 1. 新来的直接当老大
+                    top1 = candidate;
+
+                    // 2. 计算旧老大：如果和新老大完全独立（s1和s2都不重叠），就更新为老二
+                    if (old1.len > 0 && !IsOverlappingGlobal(top1, old1))
+                    {
+                        top2 = old1;
+                    }
+                    else
+                    {
+                        // 旧老大和新老大冲突了，让旧老二顶上
+                        top2 = old2;
+                    }
+
+                    // 3. 计算老二：如果老二和新老大冲突，就删掉老二
+                    if (top2.len > 0 && IsOverlappingGlobal(top1, top2))
+                    {
+                        top2 = (-1, -1, 0);
+                    }
+                }
+                else if (len > top2.len)
+                {
+                    // ================= 场景 B：新来的比老大小，比老二长 =================
+                    // 必须和老大完全独立，才能当老二
+                    if (!IsOverlappingGlobal(top1, candidate))
+                    {
+                        top2 = candidate;
+                    }
+                }
+            }
+
+            // 【优化遍历顺序】：优先扫描最长的对角线
+            // 主对角线最长，先扫它
+            ScanDiagonal(0, 0, Math.Min(m, n));
+
+            // 按距离主对角线的距离（offset），由近及远扫描
+            // 越近的对角线越长，越容易触发 top2 的剪枝条件
+            int maxOffset = Math.Max(m, n) - 1;
+            for (int offset = 1; offset <= maxOffset; offset++)
+            {
+                // 如果当前偏移量下的最长对角线，已经小于 MIN_LEN 或 小于等于 top2，后续更短的对角线也不用扫了，直接全局终止！
+                int currentMaxDiagLength = Math.Min(m, n) - offset;
+                if (currentMaxDiagLength < MIN_LEN) break; // 【补回】
+                if (top2.len > 0 && currentMaxDiagLength <= top2.len) break;
+
+                // 扫描下方的对角线 (起点在 s1 的左边界)
+                if (offset < m)
+                    ScanDiagonal(offset, 0, Math.Min(m - offset, n));
+
+                // 扫描上方的对角线 (起点在 s2 的上边界)
+                if (offset < n)
+                    ScanDiagonal(0, offset, Math.Min(m, n - offset));
+            }
+
+            // 后置处理：找出真正互斥的 Top 2（兜底保障 100% 正确）
+            if (maximalSubstrings.Count == 0) return (0, 0);
+
+            maximalSubstrings.Sort((a, b) => b.len.CompareTo(a.len));
+
+            int finalLen1 = maximalSubstrings[0].len;
+            var finalTop1 = maximalSubstrings[0];
+            int finalLen2 = 0;
+
+            for (int k = 1; k < maximalSubstrings.Count; k++)
+            {
+                var sub = maximalSubstrings[k];
+                // 【修改】必须和老大在 s1 和 s2 中都不重叠
+                if (!IsOverlappingGlobal(finalTop1, sub))
+                {
+                    finalLen2 = sub.len;
+                    break;
+                }
+            }
+
+            return (finalLen1, finalLen2);
+        }
+
+        /// <summary>
+        /// 【新增】判断两个子串是否在任意一个字符串（s1 或 s2）中重叠。
+        /// 只要有一边重叠，就视为不独立。
+        /// </summary>
+        private static bool IsOverlappingGlobal((int s1, int s2, int len) a, (int s1, int s2, int len) b)
+        {
+            // 判断在 s1 中是否重叠
+            bool overlapInS1 = !(a.s1 + a.len <= b.s1 || b.s1 + b.len <= a.s1);
+            // 判断在 s2 中是否重叠
+            bool overlapInS2 = !(a.s2 + a.len <= b.s2 || b.s2 + b.len <= a.s2);
+
+            return overlapInS1 || overlapInS2;
         }
     }
 }

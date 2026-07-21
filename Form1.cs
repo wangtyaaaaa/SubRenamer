@@ -27,7 +27,7 @@ namespace SubRenamer
         internal bool ischecked = false;
 
         /// <summary>
-        /// lable "集号" 的宽度，在Form1初始化时获取
+        /// label "集号" 的宽度，在Form1初始化时获取
         /// </summary>
         private readonly int label_num_width;
 
@@ -48,12 +48,12 @@ namespace SubRenamer
         /// <summary>
         /// 手动修改pannel内视频文件label名字
         /// </summary>
-        private static readonly string NAME_VIDEO_LABEL = "lable_video";
+        private static readonly string NAME_VIDEO_LABEL = "label_video";
 
         /// <summary>
         /// 手动修改pannel内字幕文件label名字
         /// </summary>
-        private static readonly string NAME_SUB_LABEL = "lable_sub";
+        private static readonly string NAME_SUB_LABEL = "label_sub";
 
 
         private static readonly Color COLOR_VIDEOLABEL = SystemColors.ControlLightLight;
@@ -71,7 +71,7 @@ namespace SubRenamer
         private static readonly Color COLOR_NORMAL = SystemColors.ControlLightLight;
 
         /// <summary>
-        /// Form1初始化，隐藏panel_regex，设置lable_num_width
+        /// Form1初始化，隐藏panel_regex，设置label_num_width
         /// </summary>
         public Form1()
         {
@@ -384,7 +384,7 @@ namespace SubRenamer
 
         private void Button_Redo_Click(object sender, EventArgs e)
         {
-            if (Renamer.IsRedoAvailable() == false)
+            if (Renamer.IsRedoAvailabel() == false)
             {
                 _ = MessageBox.Show(Resource.no_rename_record);
                 return;
@@ -428,65 +428,12 @@ namespace SubRenamer
 
         private void LoadNames_normal(Names names)
         {
+            // 视频按单组统一计算集号
             NumberResolver.ResolveFileList(names.videos);
-            // ===== 步骤1.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
-            // var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
-            //var tempVideo2DArray = NumberResolver.ExtractFileName2DArray(videoList);
-            // ===== 步骤1.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
-            // int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
-            //int tempVideoColIdx = NumberResolver.FindHighestMODColumn(videoList);
-            // ========== 步骤1.4：计算每个视频的最终集号，存入names.videos.num ==========
-            //for (int i = 0; i < videoList.Count; i++)
-            //{
-            //    var video = videoList[i];
-            //    string finalEpisodeStr = null; // 默认无集号
-            //    // 仅当列索引有效，且当前视频行有该列数据时，计算集号
-            //    if (tempVideoColIdx >= 0)
-            //    {
-            //        var episodeStrList = tempVideo2DArray[i];
-            //        if (tempVideoColIdx < episodeStrList.Count)
-            //        {
-            //            // 直接取原始字符串集号，不转数字
-            //            finalEpisodeStr = episodeStrList[tempVideoColIdx];
-            //        }
-            //    }
-            //    // 仅存储最终集号到Names（临时变量丢弃）
-            //    video.Num = finalEpisodeStr;
-            //}
 
+            // 字幕用分组的方式，按组计算集号
             double.TryParse(textBox_min_match_rate.Text, out double _r);
             NumberResolver.ResolveGroupFileList(names.subs, _r);
-            //// ===== 步骤2.1：临时变量 - 提取视频列表，用于批量计算集号 =====
-            //var subList = names.subs.ToList();
-            //// ===== 步骤2.2：临时变量 - 生成二维数字数组（仅方法内使用） =====
-            //// var tempNumber2DArray = NumberResolver.ExtractVideoNumber2DArray(names.videos.ToList());
-            //var tempSub2DArray = NumberResolver.ExtractFileName2DArray(subList);
-            //// ===== 步骤2.3：临时变量 - 将二维数字数组分组（仅方法内使用） =====
-            //var tempGroupSubArray = NumberResolver.GroupFileName2DArray(tempSub2DArray);
-            //// ===== 步骤2.4：按组计算集号位置（仅方法内使用） =====
-            //NumberResolver.ResolveGroupFileArray(subList, tempGroupSubArray);
-            //// ===== 步骤2.3：临时变量 - 筛选集号列索引（仅方法内使用） =====
-            //// int tempTargetColIdx = NumberResolver.FindLeftUniqueColumn(tempNumber2DArray);
-            //int tempSubColIdx = NumberResolver.FindHighestMODColumn(tempSub2DArray);
-            //// ========== 步骤2.4：计算每个视频的最终集号，存入names.subs.num ==========
-            //for (int i = 0; i < subList.Count; i++)
-            //{
-            //    var sub = subList[i];
-            //    string finalEpisodeStr = null; // 默认无集号
-            //    // 仅当列索引有效，且当前视频行有该列数据时，计算集号
-            //    if (tempSubColIdx >= 0)
-            //    {
-            //        var episodeStrList = tempSub2DArray[i];
-            //        if (tempSubColIdx < episodeStrList.Count)
-            //        {
-            //            // 直接取原始字符串集号，不转数字
-            //            finalEpisodeStr = episodeStrList[tempSubColIdx];
-            //        }
-            //    }
-            //    // 仅存储最终集号到Names（临时变量丢弃）
-            //    sub.Num = finalEpisodeStr;
-            //}
-
 
             // ========== 步骤3：处理界面渲染（基于已有文件+新计算的集号） ==========
             panel_filelist.Controls.Clear();
@@ -498,8 +445,8 @@ namespace SubRenamer
                 string episodeNum = video.Num;
                 // 创建视频面板
                 Panel videoPanel = CreateNewChildPanel();
-                Label videoLabel = CreateNewFileLable(video.File.Name, NAME_VIDEO_LABEL, video.File);
-                AddNewSubLable(videoPanel, videoLabel);
+                Label videoLabel = CreateNewFileLabel(video.File.Name, NAME_VIDEO_LABEL, video.File);
+                AddNewSubLabel(videoPanel, videoLabel);
 
                 // 匹配字幕（复用原有GetSubList逻辑）
                 if (!string.IsNullOrEmpty(episodeNum))
@@ -507,8 +454,8 @@ namespace SubRenamer
                     List<FileInfo> matchedSubs = Renamer.GetSubListByNum(names, episodeNum);
                     foreach (FileInfo sub in matchedSubs)
                     {
-                        Label subLabel = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
-                        AddNewSubLable(videoPanel, subLabel);
+                        Label subLabel = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
+                        AddNewSubLabel(videoPanel, subLabel);
                         allSubs.Remove(sub);
                     }
                 }
@@ -517,13 +464,13 @@ namespace SubRenamer
 
             // 渲染未匹配的字幕
             Panel unMatchedPanel = CreateNewChildPanel();
-            Label unMatchedTitle = CreateNewFileLable(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
-            AddNewSubLable(unMatchedPanel, unMatchedTitle);
+            Label unMatchedTitle = CreateNewFileLabel(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
+            AddNewSubLabel(unMatchedPanel, unMatchedTitle);
             AddChildrenPanel(unMatchedPanel);
             foreach (FileInfo sub in allSubs)
             {
-                Label subLabel = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
-                AddNewSubLable(unMatchedPanel, subLabel);
+                Label subLabel = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
+                AddNewSubLabel(unMatchedPanel, subLabel);
             }
 
         }
@@ -548,26 +495,26 @@ namespace SubRenamer
                 }
                 List<FileInfo> subs = Renamer.GetSubList(names, num);
                 Panel panel = CreateNewChildPanel();
-                Label label_v = CreateNewFileLable(video.File.Name, NAME_VIDEO_LABEL, video.File);
-                AddNewSubLable(panel, label_v);
+                Label label_v = CreateNewFileLabel(video.File.Name, NAME_VIDEO_LABEL, video.File);
+                AddNewSubLabel(panel, label_v);
 
                 foreach (FileInfo sub in subs)
                 {
-                    Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
-                    AddNewSubLable(panel, label_s);
+                    Label label_s = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
+                    AddNewSubLabel(panel, label_s);
                     _ = allsubs.Remove(sub);
                 }
                 AddChildrenPanel(panel);
             }
 
             Panel panel_1 = CreateNewChildPanel();
-            Label label_v1 = CreateNewFileLable(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
-            AddNewSubLable(panel_1, label_v1);
+            Label label_v1 = CreateNewFileLabel(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
+            AddNewSubLabel(panel_1, label_v1);
             AddChildrenPanel(panel_1);
             foreach (FileInfo sub in allsubs)
             {
-                Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
-                AddNewSubLable(panel_1, label_s);
+                Label label_s = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
+                AddNewSubLabel(panel_1, label_s);
             }
         }
 
@@ -582,25 +529,25 @@ namespace SubRenamer
             {
                 Panel panel = CreateNewChildPanel();
                 List<FileInfo> subs = Renamer.GetSubList(subDic, videoDic[video]);
-                Label label_v = CreateNewFileLable(video.Name, NAME_VIDEO_LABEL, video);
-                AddNewSubLable(panel, label_v);
+                Label label_v = CreateNewFileLabel(video.Name, NAME_VIDEO_LABEL, video);
+                AddNewSubLabel(panel, label_v);
                 foreach (FileInfo sub in subs)
                 {
-                    Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
-                    AddNewSubLable(panel, label_s);
+                    Label label_s = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
+                    AddNewSubLabel(panel, label_s);
                     _ = allsubs.Remove(sub);
                 }
                 AddChildrenPanel(panel);
             }
 
             Panel panel_1 = CreateNewChildPanel();
-            Label label_v1 = CreateNewFileLable(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
-            AddNewSubLable(panel_1, label_v1);
+            Label label_v1 = CreateNewFileLabel(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
+            AddNewSubLabel(panel_1, label_v1);
             AddChildrenPanel(panel_1);
             foreach (FileInfo sub in allsubs)
             {
-                Label label_s = CreateNewFileLable(sub.Name, NAME_SUB_LABEL, sub);
-                AddNewSubLable(panel_1, label_s);
+                Label label_s = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
+                AddNewSubLabel(panel_1, label_s);
             }
         }
 
@@ -665,8 +612,8 @@ namespace SubRenamer
                     {
                         //e.Effect = DragDropEffects.Move;
                         if (dragTraget.Parent is Panel _p)
-                            RemoveSubLable(_p, dragTraget);
-                        AddNewSubLable(_s, dragTraget);
+                            RemoveSubLabel(_p, dragTraget);
+                        AddNewSubLabel(_s, dragTraget);
                     }
                 }
 
@@ -708,7 +655,7 @@ namespace SubRenamer
         }
 
 
-        private void AddNewSubLable(Panel panel, Label lable)
+        private void AddNewSubLabel(Panel panel, Label label)
         {
             Label video = null;
             int buttom = 0;
@@ -730,20 +677,20 @@ namespace SubRenamer
                     //}
                 }
             }
-            if (lable.Name == NAME_VIDEO_LABEL)
+            if (label.Name == NAME_VIDEO_LABEL)
             {
                 if (video == null)
                 {
-                    lable.Location = new Point(3, 3);
-                    panel.Controls.Add(lable);
+                    label.Location = new Point(3, 3);
+                    panel.Controls.Add(label);
                     resize = true;
                 }
             }
-            else if (lable.Name == NAME_SUB_LABEL)
+            else if (label.Name == NAME_SUB_LABEL)
             {
-                lable.Location = video != null ? new Point(video.Left + 15, buttom + 3) : new Point(panel.Left + 18, buttom + 3);
-                panel.Controls.Add(lable);
-                buttom = lable.Bottom + 3;
+                label.Location = video != null ? new Point(video.Left + 15, buttom + 3) : new Point(panel.Left + 18, buttom + 3);
+                panel.Controls.Add(label);
+                buttom = label.Bottom + 3;
                 resize = true;
             }
 
@@ -754,9 +701,9 @@ namespace SubRenamer
             }
         }
 
-        private void RemoveSubLable(Panel panel, Label lable)
+        private void RemoveSubLabel(Panel panel, Label label)
         {
-            panel.Controls.Remove(lable);
+            panel.Controls.Remove(label);
 
             List<Label> list = new List<Label>();
             Label video = null;
@@ -804,12 +751,12 @@ namespace SubRenamer
 
         }
 
-        private Label CreateNewFileLable(string text, string name, FileInfo file)
+        private Label CreateNewFileLabel(string text, string name, FileInfo file)
         {
 
             if (name == NAME_VIDEO_LABEL)
             {
-                Label lable = new Label
+                Label label = new Label
                 {
                     BackColor = COLOR_VIDEOLABEL,
                     Text = text,
@@ -819,11 +766,11 @@ namespace SubRenamer
                     Name = name,
                     Tag = file
                 };
-                return lable;
+                return label;
             }
             else if (name == NAME_SUB_LABEL)
             {
-                Label lable = new Label
+                Label label = new Label
                 {
                     BackColor = COLOR_SUBLABEL,
                     Text = text,
@@ -833,11 +780,11 @@ namespace SubRenamer
                     Name = name,
                     Tag = file
                 };
-                lable.MouseDown += new MouseEventHandler(SubLable_MouseDown);
-                lable.MouseUp += new MouseEventHandler(SubLable_MouseUp);
-                lable.MouseMove += new MouseEventHandler(SubLable_MouseMove);
-                lable.QueryContinueDrag += new QueryContinueDragEventHandler(SubLable_QueryContinueDrag);
-                return lable;
+                label.MouseDown += new MouseEventHandler(SubLabel_MouseDown);
+                label.MouseUp += new MouseEventHandler(SubLabel_MouseUp);
+                label.MouseMove += new MouseEventHandler(SubLabel_MouseMove);
+                label.QueryContinueDrag += new QueryContinueDragEventHandler(SubLabel_QueryContinueDrag);
+                return label;
             }
             else
             {
@@ -846,7 +793,7 @@ namespace SubRenamer
 
         }
 
-        private void SubLable_MouseMove(object sender, MouseEventArgs e)
+        private void SubLabel_MouseMove(object sender, MouseEventArgs e)
         {
             if (dragTraget != null)
             {
@@ -859,7 +806,7 @@ namespace SubRenamer
             }
         }
 
-        private void SubLable_MouseUp(object sender, MouseEventArgs e)
+        private void SubLabel_MouseUp(object sender, MouseEventArgs e)
         {
 #if DEBUG
             //手动调整窗口时debug用
@@ -869,7 +816,7 @@ namespace SubRenamer
         }
 
 
-        private void SubLable_MouseDown(object sender, MouseEventArgs e)
+        private void SubLabel_MouseDown(object sender, MouseEventArgs e)
         {
 #if DEBUG
             //手动调整窗口时debug用
@@ -906,7 +853,7 @@ namespace SubRenamer
         }
 
 
-        private void SubLable_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
+        private void SubLabel_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
         {
             if (sender is Control _s)
             {
