@@ -1,30 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Deployment.Application;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace SubRenamer
 {
     public partial class Form1 : Form
     {
-        /// <summary>
-        /// 重命名工作结束时返回的表记
-        /// </summary>
-        private static readonly string END_MSG = "end";
 
         /// <summary>
         /// Names的根节点
         /// </summary>
         private Names names = null;
+
+#if ENABLE_CHECK_MESSAGE 
         /// <summary>
         /// 是否确认过提示信息
         /// </summary>
         internal bool ischecked = false;
+#endif
 
         /// <summary>
         /// label "集号" 的宽度，在Form1初始化时获取
@@ -81,10 +77,9 @@ namespace SubRenamer
             this.textBox_path.Text = "C:\\aaa\\bbb";
 #endif         
             SetPanelRegexVisible(false);
+            UpdateButtonRevokeClickable();
             label_num_width = label_video_num.Width;
             TextBox_Ext_Size();
-            textBox_subExt.Text = Extentions.GetExts(Extentions.SUB);
-            textBox_videoExt.Text = Extentions.GetExts(Extentions.VIDEO);
         }
 
         /// <summary>
@@ -170,19 +165,7 @@ namespace SubRenamer
             if (msg != null)
             {
                 string str = msg.ToString();
-                if (str != null && str.Equals(END_MSG))
-                {
-                    SetClickable(true);
-                    toolStripStatusLabel1.Text = Resource.rename_complete;
-                    //this.button_name_Click(null, null);
-                    Button_name2_Click(sender, null);
-                }
-                else
-                {
-                    toolStripStatusLabel1.Text = msg.ToString();
-
-                    //this.toolStripStatusLabel1.ToolTipText = this.toolStripStatusLabel1.Text;
-                }
+                toolStripStatusLabel1.Text = str;
             }
         }
 
@@ -190,7 +173,6 @@ namespace SubRenamer
         {
             BackgroundWorker bgWorker = sender as BackgroundWorker;
             int c = 0;
-            //Renamer.Rename(names, bgWorker);
             Renamer.ClearRedoDic();
             foreach (object panel in panel_filelist.Controls)
             {
@@ -218,7 +200,7 @@ namespace SubRenamer
                                 }
                             }
                         }
-                        if (video != null && subs.Count != 0 && bgWorker != null)
+                        if (video != null && subs.Count > 0 && bgWorker != null)
                         {
                             bgWorker.ReportProgress(++c, video.Name);
                             Renamer.RenameSubs(video, subs, textBox_delimiter.Text);
@@ -226,14 +208,14 @@ namespace SubRenamer
                     }
                 }
             }
-            if (bgWorker != null) bgWorker.ReportProgress(-1, END_MSG);
         }
 
         private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            //BackgroundWorker bgWorker = sender as BackgroundWorker;
-            //bgWorker.ReportProgress(-1, END_MSG);
-
+            SetClickable(true);
+            toolStripStatusLabel1.Text = Resource.rename_complete;
+            Button_name2_Click(sender, null);
+            MessageBox.Show("RunWorkerCompleted");
         }
 
         private void SetClickable(bool p)
@@ -243,11 +225,12 @@ namespace SubRenamer
             button_doRename.Enabled = p;
             button_name2.Enabled = p;
             textBox_path.Enabled = p;
-            //throw new NotImplementedException();
+
+            UpdateButtonRevokeClickable();
         }
 
 
-
+#if ENABLE_CHECK_MESSAGE
         internal bool DoCheckMessage()
         {
             MessageBoxButtons messButton = MessageBoxButtons.OKCancel;
@@ -259,6 +242,8 @@ namespace SubRenamer
             }
             return false;
         }
+#endif
+
 
         private void Button_regex_panel_Click_1(object sender, EventArgs e)
         {
@@ -304,8 +289,8 @@ namespace SubRenamer
         /// <exception cref="NotImplementedException"></exception>
         private void TextBox_Ext_Size()
         {
-            textBox_subExt.Left = ((button_doRename.Right + 6 + button_redo.Left - 6) / 2) + 3;
-            textBox_subExt.Width = button_redo.Left - textBox_subExt.Left - 6;
+            textBox_subExt.Left = ((button_doRename.Right + 6 + button_revoke.Left - 6) / 2) + 3;
+            textBox_subExt.Width = button_revoke.Left - textBox_subExt.Left - 6;
 
             textBox_videoExt.Width = textBox_subExt.Width;
 
@@ -338,15 +323,6 @@ namespace SubRenamer
                 str = str.Replace(".", "\\.");
                 str = str.Replace("?", "\\?");
                 textBox.Text = str;
-                //string patt = "[\\\\\\[\\]\\(\\)\\{\\}^$|*+?]";
-                //MessageBox.Show(patt);
-                //MatchCollection res = Regex.Matches(str, patt);
-                //string aaa = "";
-                //foreach (Match v in res)
-                //{
-                //    aaa += v.Value + "\n";
-                //}
-                //MessageBox.Show(aaa);
             }
         }
 
@@ -358,6 +334,8 @@ namespace SubRenamer
         /// <param name="e"></param>
         private void Button_name2_Click(object sender, EventArgs e)
         {
+            Extentions.SetExts(textBox_videoExt.Text, Extentions.VIDEO);
+            Extentions.SetExts(textBox_subExt.Text, Extentions.SUB);
             toolStripProgressBar1.Value = 0;
             DirectoryInfo dInfo = new DirectoryInfo(textBox_path.Text);
             names = !panel_regex.Visible
@@ -380,9 +358,12 @@ namespace SubRenamer
             }
         }
 
+        internal void UpdateButtonRevokeClickable()
+        {
+            button_revoke.Enabled = Renamer.IsRedoAvailabel();
+        }
 
-
-        private void Button_Redo_Click(object sender, EventArgs e)
+        private void Button_Revoke_Click(object sender, EventArgs e)
         {
             if (Renamer.IsRedoAvailabel() == false)
             {
@@ -390,7 +371,7 @@ namespace SubRenamer
                 return;
             }
 
-            if (Renamer.Redo())
+            if (Renamer.Revoke())
             {
                 Button_name2_Click(null, null);
                 _ = MessageBox.Show(Resource.revoke_successed);
@@ -400,6 +381,8 @@ namespace SubRenamer
                 Button_name2_Click(null, null);
                 _ = MessageBox.Show(Resource.revoke_fail);
             }
+
+            UpdateButtonRevokeClickable();
         }
 
 
@@ -429,54 +412,51 @@ namespace SubRenamer
         private void LoadNames_normal(Names names)
         {
             // 视频按单组统一计算集号
-            NumberResolver.ResolveFileList(names.videos);
+            NumberResolver.ResolveVSFileList(names.videos);
 
             // 字幕用分组的方式，按组计算集号
             double.TryParse(textBox_min_match_rate.Text, out double _r);
-            NumberResolver.ResolveGroupFileList(names.subs, _r);
+            NumberResolver.ResolveVSFileListBYGroup(names.subs, _r);
 
             // ========== 步骤3：处理界面渲染（基于已有文件+新计算的集号） ==========
+            // 清理现有界面
             panel_filelist.Controls.Clear();
-            var allSubs = VSFile.FileListTOFileInfoList(names.subs); // 复制字幕列表，用于标记已匹配
+
+            //匹配视频字幕文件
+            var groups = Renamer.GetPairedVSFileGroups(names.videos, names.subs);
+
             // 渲染每个视频及匹配的字幕
-            foreach (VSFile video in names.videos)
-            {
-                // 从 video.num 读取原始集号字符串
-                string episodeNum = video.Num;
-                // 创建视频面板
-                Panel videoPanel = CreateNewChildPanel();
-                Label videoLabel = CreateNewFileLabel(video.File.Name, NAME_VIDEO_LABEL, video.File);
-                AddNewSubLabel(videoPanel, videoLabel);
-
-                // 匹配字幕（复用原有GetSubList逻辑）
-                if (!string.IsNullOrEmpty(episodeNum))
-                {
-                    List<FileInfo> matchedSubs = Renamer.GetSubListByNum(names, episodeNum);
-                    foreach (FileInfo sub in matchedSubs)
-                    {
-                        Label subLabel = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
-                        AddNewSubLabel(videoPanel, subLabel);
-                        allSubs.Remove(sub);
-                    }
-                }
-                AddChildrenPanel(videoPanel);
-            }
-
-            // 渲染未匹配的字幕
-            Panel unMatchedPanel = CreateNewChildPanel();
-            Label unMatchedTitle = CreateNewFileLabel(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
-            AddNewSubLabel(unMatchedPanel, unMatchedTitle);
-            AddChildrenPanel(unMatchedPanel);
-            foreach (FileInfo sub in allSubs)
-            {
-                Label subLabel = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
-                AddNewSubLabel(unMatchedPanel, subLabel);
-            }
-
+            SetFileListUI(groups);
         }
 
+        /// <summary>
+        /// 按分好组的文件添加界面控件
+        /// </summary>
+        /// <param name="groups"></param>
+        private void SetFileListUI(List<PairedVSFileGroup> groups)
+        {
+            foreach (var group in groups)
+            {
+                var video = group.Video;
+                var video_name = video != null ? video.File.Name : Resource.other_sub_filename;
+                var video_file = video?.File;
+                // 创建组面板
+                Panel videoPanel = CreateNewChildPanel();
+                // 创建视频标签
+                Label videoLabel = CreateNewFileLabel(video_name, NAME_VIDEO_LABEL, video_file);
+                //视频标签添加到面板中
+                AddNewSubLabel(videoPanel, videoLabel);
 
+                foreach (var sub in group.Subs)
+                {
+                    // 创建字幕标签
+                    Label subLabel = CreateNewFileLabel(sub.File.Name, NAME_SUB_LABEL, sub.File);
+                    AddNewSubLabel(videoPanel, subLabel);
+                }
 
+                AddChildrenPanel(videoPanel);
+            }
+        }
 
         private void LoadNames_Reslobered(Names names)
         {
@@ -520,35 +500,18 @@ namespace SubRenamer
 
         private void LoadNames_Regex(Names names)
         {
-            List<FileInfo> allsubs = VSFile.FileListTOFileInfoList(names.subs);
+ 
+            NumberResolver.ResolveVSFileListBYRegex(names.videos, names.GetVideoReplasePattern());
+            NumberResolver.ResolveVSFileListBYRegex(names.subs, names.GetSubReplasePattern());
 
-            Dictionary<FileInfo, string> videoDic = Renamer.GetDic(VSFile.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = Renamer.GetDic(VSFile.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
+            // 清理现有界面
+            panel_filelist.Controls.Clear();
 
-            foreach (FileInfo video in videoDic.Keys)
-            {
-                Panel panel = CreateNewChildPanel();
-                List<FileInfo> subs = Renamer.GetSubList(subDic, videoDic[video]);
-                Label label_v = CreateNewFileLabel(video.Name, NAME_VIDEO_LABEL, video);
-                AddNewSubLabel(panel, label_v);
-                foreach (FileInfo sub in subs)
-                {
-                    Label label_s = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
-                    AddNewSubLabel(panel, label_s);
-                    _ = allsubs.Remove(sub);
-                }
-                AddChildrenPanel(panel);
-            }
+            //匹配视频字幕文件
+            var groups = Renamer.GetPairedVSFileGroups(names.videos, names.subs);
 
-            Panel panel_1 = CreateNewChildPanel();
-            Label label_v1 = CreateNewFileLabel(Resource.other_sub_filename, NAME_VIDEO_LABEL, null);
-            AddNewSubLabel(panel_1, label_v1);
-            AddChildrenPanel(panel_1);
-            foreach (FileInfo sub in allsubs)
-            {
-                Label label_s = CreateNewFileLabel(sub.Name, NAME_SUB_LABEL, sub);
-                AddNewSubLabel(panel_1, label_s);
-            }
+            // 渲染每个视频及匹配的字幕
+            SetFileListUI(groups);
         }
 
         private void AddChildrenPanel(Panel panel)
@@ -603,7 +566,7 @@ namespace SubRenamer
 #if DEBUG
             //手动调整窗口时debug用
             this.toolStripProgressBar1.Text = "DragDrop";
-#endif         
+#endif
             if (sender is Panel _s)
             {
                 if (dragTraget != null)
@@ -860,13 +823,13 @@ namespace SubRenamer
                 Form f = _s.FindForm();
                 if (f != null)
                 {
-                    Point screenLocation_Panel1 = PointToScreen(panel_filelist.Location);
+                    Point screenLocation_Panel1 = panel_filelist.PointToScreen(Point.Empty);
                     Point screenOffset = SystemInformation.WorkingArea.Location;
 
 #if DEBUG
                     //手动调整窗口时debug用
                     this.toolStripStatusLabel1.Text = "m (" + (Control.MousePosition.X - screenLocation_Panel1.X) + "," + (Control.MousePosition.Y - screenLocation_Panel1.Y) + ") L ("
-                        + panel_filelist.AutoScrollPosition.X + "," + panel_filelist.AutoScrollPosition.Y + ") " + panel_filelist.Height + " d " + dragTraget.ToString();
+                        + panel_filelist.AutoScrollPosition.X + "," + panel_filelist.AutoScrollPosition.Y + ") " + panel_filelist.Height.ToString();
 #endif
                     //(this.Height - this.ClientRectangle.Height)
 
@@ -888,11 +851,6 @@ namespace SubRenamer
                     }
                     else if (Control.MousePosition.Y - screenLocation_Panel1.Y < 15)
                     {
-#if DEBUG
-                        //手动调整窗口时debug用
-                        toolStripStatusLabel1.Text = (DateTime.Now - scrolltime).TotalMilliseconds.ToString();
-#endif
-
                         if ((DateTime.Now - scrolltime).TotalMilliseconds > 5)
                         {
                             panel_filelist.AutoScrollPosition = new Point(0, -panel_filelist.AutoScrollPosition.Y - 4);
@@ -914,25 +872,13 @@ namespace SubRenamer
 
 
 
-        private void TextBox_videoExt_TextChanged(object sender, EventArgs e)
-        {
-            TextBox videoExt = (TextBox)sender;
-            Extentions.SetExts(videoExt.Text, Extentions.VIDEO);
-        }
-
-        private void TextBox_subExt_TextChanged(object sender, EventArgs e)
-        {
-            TextBox subExt = (TextBox)sender;
-            Extentions.SetExts(subExt.Text, Extentions.SUB);
-        }
-
         private void SetExtText_BoxVisable(bool visable)
         {
             textBox_subExt.Visible = visable;
             textBox_videoExt.Visible = visable;
         }
 
-        private void textBox_checkNum(object sender, EventArgs e)
+        private void TextBox_checkNum(object sender, EventArgs e)
         {
             if (sender is TextBox _s)
             {
@@ -965,7 +911,7 @@ namespace SubRenamer
         }
 
 
-        private void onKeyDown_LoseFocus(object sender, KeyEventArgs e)
+        private void OnKeyDown_LoseFocus(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {

@@ -65,7 +65,7 @@ namespace SubRenamer
             this.button_name2 = new System.Windows.Forms.Button();
             this.button_regex_panel = new System.Windows.Forms.Button();
             this.button_resolve = new System.Windows.Forms.Button();
-            this.button_redo = new System.Windows.Forms.Button();
+            this.button_revoke = new System.Windows.Forms.Button();
             this.panel_filelist = new System.Windows.Forms.Panel();
             this.panel_path = new System.Windows.Forms.Panel();
             this.label_delimiter = new System.Windows.Forms.Label();
@@ -121,19 +121,19 @@ namespace SubRenamer
             // 
             // toolStripStatusLabel1
             // 
-            resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
             this.toolStripStatusLabel1.AutoToolTip = true;
             this.toolStripStatusLabel1.IsLink = true;
             this.toolStripStatusLabel1.Margin = new System.Windows.Forms.Padding(11, 3, 0, 2);
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
+            resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
             this.toolStripStatusLabel1.Spring = true;
             // 
             // toolStripProgressBar1
             // 
             this.toolStripProgressBar1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
             // 
             // panel_root
             // 
@@ -160,22 +160,20 @@ namespace SubRenamer
             resources.ApplyResources(this.textBox_videoExt, "textBox_videoExt");
             this.textBox_videoExt.Name = "textBox_videoExt";
             this.toolTip1.SetToolTip(this.textBox_videoExt, resources.GetString("textBox_videoExt.ToolTip"));
-            this.textBox_videoExt.TextChanged += new System.EventHandler(this.TextBox_videoExt_TextChanged);
             // 
             // textBox_subExt
             // 
             resources.ApplyResources(this.textBox_subExt, "textBox_subExt");
             this.textBox_subExt.Name = "textBox_subExt";
             this.toolTip1.SetToolTip(this.textBox_subExt, resources.GetString("textBox_subExt.ToolTip"));
-            this.textBox_subExt.TextChanged += new System.EventHandler(this.TextBox_subExt_TextChanged);
             // 
             // textBox_min_match_rate
             // 
             resources.ApplyResources(this.textBox_min_match_rate, "textBox_min_match_rate");
             this.textBox_min_match_rate.Name = "textBox_min_match_rate";
             this.toolTip1.SetToolTip(this.textBox_min_match_rate, resources.GetString("textBox_min_match_rate.ToolTip"));
-            this.textBox_min_match_rate.KeyDown += new System.Windows.Forms.KeyEventHandler(this.onKeyDown_LoseFocus);
-            this.textBox_min_match_rate.Leave += new System.EventHandler(this.textBox_checkNum);
+            this.textBox_min_match_rate.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDown_LoseFocus);
+            this.textBox_min_match_rate.Leave += new System.EventHandler(this.TextBox_checkNum);
             // 
             // label_video_ext
             // 
@@ -281,7 +279,7 @@ namespace SubRenamer
             this.tableLayoutPanel2.Controls.Add(this.button_doRename, 1, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_regex_panel, 6, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_resolve, 5, 0);
-            this.tableLayoutPanel2.Controls.Add(this.button_redo, 4, 0);
+            this.tableLayoutPanel2.Controls.Add(this.button_revoke, 4, 0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             // 
             // button_name2
@@ -305,12 +303,12 @@ namespace SubRenamer
             this.button_resolve.UseVisualStyleBackColor = true;
             this.button_resolve.Click += new System.EventHandler(this.Button_Resolve_Click);
             // 
-            // button_redo
+            // button_revoke
             // 
-            resources.ApplyResources(this.button_redo, "button_redo");
-            this.button_redo.Name = "button_redo";
-            this.button_redo.UseVisualStyleBackColor = true;
-            this.button_redo.Click += new System.EventHandler(this.Button_Redo_Click);
+            resources.ApplyResources(this.button_revoke, "button_revoke");
+            this.button_revoke.Name = "button_revoke";
+            this.button_revoke.UseVisualStyleBackColor = true;
+            this.button_revoke.Click += new System.EventHandler(this.Button_Revoke_Click);
             // 
             // panel_filelist
             // 
@@ -392,7 +390,7 @@ namespace SubRenamer
         private System.Windows.Forms.Button button_autotransfer;
         private System.Windows.Forms.Button button_name2;
         private System.Windows.Forms.Button button_resolve;
-        private System.Windows.Forms.Button button_redo;
+        private System.Windows.Forms.Button button_revoke;
         private System.Windows.Forms.Panel panel_filelist;
         private System.Windows.Forms.TextBox textBox_subExt;
         private System.Windows.Forms.TextBox textBox_videoExt;

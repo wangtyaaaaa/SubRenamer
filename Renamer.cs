@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,76 +13,8 @@ namespace SubRenamer
         private static readonly string regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
         // private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
         private static readonly string regex_headAndTail = "第|話|话|集";
-        private static readonly Dictionary<string, string> redo = new Dictionary<string, string>();
-        public static void Rename(Names names, BackgroundWorker bkWorker)
-        {
-            if (names.IsRegex)
-            {
-                Rename_Regex(names, bkWorker);
-            }
-            else if (names.Resolved)
-            {
-                Rename_Reslobered(names, bkWorker);
-            }
-            else
-            {
-                Rename(names, bkWorker, 0);
-            }
-        }
+        private static readonly Dictionary<string, string> Redo_Log = new Dictionary<string, string>();
 
-        private static void Rename_Reslobered(Names names, BackgroundWorker bkWorker)
-        {
-            int c = 0;
-            foreach (Video video in names.videos)
-            {
-                bkWorker?.ReportProgress(++c, video.File.Name);
-                if (video.Num != null && video.Num != "")
-                {
-                    // string num = video.num;
-                    // if (num == null || num == "")
-                    // {
-                    //     continue;
-                    // }
-                    List<FileInfo> subs = GetSubList(names, video.Num);
-                    RenameSubs(video.File, subs, null);
-                }
-            }
-        }
-
-        public static void Rename(Names names, BackgroundWorker bkWorker, int count)
-        {
-            int c = count;
-            foreach (Video video in names.videos)
-            {
-                bkWorker.ReportProgress(++c, video.File.Name);
-                string num = GetEpisodeNumber(video.File);
-                if (num == null)
-                {
-                    continue;
-                }
-                List<FileInfo> subs = GetSubList(names, num);
-                RenameSubs(video.File, subs, null);
-
-            }
-            foreach (Names name in names.names)
-            {
-                Rename(name, bkWorker, c);
-            }
-
-        }
-
-        private static void Rename_Regex(Names names, BackgroundWorker bkWorker)
-        {
-            Dictionary<FileInfo, string> videoDic = GetDic(VSFile.FileListTOFileInfoList(names.videos), names.GetVideoReplasePattern());
-            Dictionary<FileInfo, string> subDic = GetDic(VSFile.FileListTOFileInfoList(names.subs), names.GetSubReplasePattern());
-            int c = 0;
-            foreach (FileInfo video in videoDic.Keys)
-            {
-                bkWorker?.ReportProgress(++c, video.Name);
-                List<FileInfo> subs = GetSubList(subDic, videoDic[video]);
-                RenameSubs(video, subs, null);
-            }
-        }
 
         internal static void RenameSubs(FileInfo video, List<FileInfo> subs, string delimiter)
         {
@@ -108,22 +39,22 @@ namespace SubRenamer
 
         private static void SetRedoDic(string oldname, string newname)
         {
-            if (redo.ContainsKey(oldname))
+            if (Redo_Log.ContainsKey(oldname))
             {
-                _ = redo.Remove(oldname);
+                _ = Redo_Log.Remove(oldname);
             }
 
-            redo.Add(oldname, newname);
+            Redo_Log.Add(oldname, newname);
         }
 
         public static void ClearRedoDic()
         {
-            redo.Clear();
+            Redo_Log.Clear();
         }
 
-        public static bool Redo()
+        public static bool Revoke()
         {
-            Dictionary<string, string>.Enumerator e = redo.GetEnumerator();
+            Dictionary<string, string>.Enumerator e = Redo_Log.GetEnumerator();
             while (e.MoveNext())
             {
                 string old = e.Current.Key;
@@ -147,19 +78,7 @@ namespace SubRenamer
 
         public static bool IsRedoAvailabel()
         {
-            return redo.Count != 0;
-        }
-
-        internal static Dictionary<FileInfo, string> GetDic(List<FileInfo> videos, string p)
-        {
-            Dictionary<FileInfo, string> dic = new Dictionary<FileInfo, string>();
-            foreach (FileInfo video in videos)
-            {
-                string name = video.Name;
-                string str = Regex.Replace(name, p, "");
-                dic.Add(video, str);
-            }
-            return dic;
+            return Redo_Log.Count > 0;
         }
 
         private static string GetFullNameWithOutExtension(FileInfo video)
@@ -228,14 +147,33 @@ namespace SubRenamer
         /// <param name="names"></param>
         /// <param name="num">集号</param>
         /// <returns>字幕文件列表</returns>
-        internal static List<FileInfo> GetSubListByNum(Names names, string num)
+        internal static List<T> GetSubListByNum<T>(List<T> list, string num) where T : VSFile
         {
-            List<FileInfo> subs = new List<FileInfo>();
-            foreach (Sub sub in names.subs)
+            List<T> result = new List<T>();
+            foreach (T file in list)
             {
-                if (sub.Num == num) subs.Add(sub.File);
+                if (file.Num == num) result.Add(file);
+                else if (file.Num.Contains(".") && num.Contains("."))
+                {
+                    if (
+                        double.TryParse(
+                            file.Num,
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out double d1)
+                        &&
+                        double.TryParse(
+                            num,
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out double d2)
+                        )
+                    {
+                        if (d1 == d2) result.Add(file);
+                    }
+                }
             }
-            return subs;
+            return result;
         }
 
         internal static List<FileInfo> GetSubList(Names names, string num)
@@ -251,19 +189,6 @@ namespace SubRenamer
             return subs;
         }
 
-        internal static List<FileInfo> GetSubList(Dictionary<FileInfo, string> subDic, string key)
-        {
-            List<FileInfo> subs = new List<FileInfo>();
-            foreach (FileInfo sub in subDic.Keys)
-            {
-                if (subDic[sub].Equals(key))
-                {
-                    subs.Add(sub);
-                    // subDic.Remove(sub);
-                }
-            }
-            return subs;
-        }
 
         private static bool IsFit(FileInfo sub, string num)
         {
@@ -274,12 +199,21 @@ namespace SubRenamer
                 {
                     return true;
                 }
-                //else if (double.Parse(subNum) == double.Parse(num))
-                //{
-                //    return true;
-                //}
-                else if (double.TryParse(subNum, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double d1) &&
-         double.TryParse(num, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double d2))
+                else if (
+                        double.TryParse(
+                            subNum,
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out double d1
+                            )
+                        &&
+                        double.TryParse(
+                            num,
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out double d2
+                            )
+                        )
                 {
                     if (d1 == d2) return true;
                 }
@@ -334,38 +268,6 @@ namespace SubRenamer
         }
 
 
-        ///// <summary>
-        ///// （重构后）提取文件名中所有匹配的数字字符串（和原GetVideoNumber算法一致）
-        ///// </summary>
-        ///// <param name="file">文件信息</param>
-        ///// <returns>匹配的数字字符串数组（无匹配返回空数组）</returns>
-        //public static string[] GetEpisodeNumberArray(FileInfo video)
-        //{
-        //    if (video == null || string.IsNullOrEmpty(video.Name))
-        //        return Array.Empty<string>();
-
-        //    var result = new List<string>(); ;
-        //    // 复用原GetVideoNumber的匹配逻辑，提取所有匹配项
-        //    List<string> strs = SplitFileNameWithoutExtension(video);
-        //    foreach (string str in strs)
-        //    {
-        //        string str2 = ResolveEpisodeNumber(str);
-
-        //        if (!float.TryParse(str2, out float f))
-        //        {
-        //            continue;
-        //        }
-
-        //        if (f < 0 || f > 1900)
-        //        {
-        //            continue;
-        //        }
-
-
-        //        result.Add(str2);
-        //    }
-        //    return result.ToArray();
-        //}
 
         /// <summary>
         /// 判断str是不是疑似集号
@@ -389,12 +291,6 @@ namespace SubRenamer
             return true;
         }
 
-        internal static List<string> SplitFileNameWithoutExtension(FileInfo file)
-        {
-            var name = file.Name.Replace(file.Extension, "");
-            List<string> strs = Split(name);
-            return strs;
-        }
 
         /// <summary>
         /// 将文件名打散用于分组计算集号位置，比Split方法打的更细碎
@@ -425,9 +321,6 @@ namespace SubRenamer
                         continue;                    // 直接进入下一次循环
                     }
                 }
-
-                // --- 以下是你原有的逻辑，一行都不用改 ---
-
                 // 原有的分隔符判断
                 if (c == ' ' || c == '.' || c == '_' || c == '-' ||
                     c == '[' || c == ']' || c == '(' || c == ')' ||
@@ -501,9 +394,6 @@ namespace SubRenamer
         /// <returns></returns>
         internal static string GetEpisodeNumber(FileInfo video)
         {
-            //var numbers = GetEpisodeNumberArray(video);
-            //return numbers.Length > 0 ? numbers[0] : null;
-
             string name = (string)video.Name.Clone();
             name = name.Replace(video.Extension, "");
             List<string> strs = Split(name);
@@ -519,7 +409,7 @@ namespace SubRenamer
 
                 str2 = Regex.Replace(str2, regex_headAndTail, "");
 
-                if (!float.TryParse(str2, out float f))
+                if (!double.TryParse(str2, out double f))
                 {
                     continue;
                 }
@@ -613,6 +503,40 @@ namespace SubRenamer
                 }
             }
             throw new Exception("cannot find matching pos");
+        }
+
+        /// <summary>
+        /// 给所有视频匹配字幕，返回列表，列表最后是匹配不到视频的字幕
+        /// </summary>
+        /// <param name="allVideos"></param>
+        /// <param name="subs"></param>
+        /// <returns></returns>
+        internal static List<PairedVSFileGroup> GetPairedVSFileGroups(List<Video> allVideos, List<Sub> subs)
+        {
+            var result = new List<PairedVSFileGroup>();
+            var allSubs = new List<Sub>(subs);
+            foreach (var video in allVideos)
+            {
+                var group = new PairedVSFileGroup(video);
+                result.Add(group);
+                string episodeNum = video.Num;
+                if (!string.IsNullOrEmpty(episodeNum))
+                {
+                    var matchedSubs = GetSubListByNum(allSubs, episodeNum);
+                    foreach (var sub in matchedSubs)
+                    {
+                        group.AddSub(sub);
+                        allSubs.Remove(sub);
+                    }
+                }
+            }
+            var endGroup = new PairedVSFileGroup(null);
+            result.Add(endGroup);
+            foreach (var sub in allSubs)
+            {
+                endGroup.AddSub(sub);
+            }
+            return result;
         }
     }
 }

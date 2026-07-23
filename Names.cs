@@ -6,49 +6,35 @@ using System.Windows.Forms;
 
 namespace SubRenamer
 {
-    internal class Extentions
+    internal static class Extentions
     {
         public const int VIDEO = 1;
         public const int SUB = 2;
-        public static string[] video_ext = { "mp4", "mkv" };
-        public static string[] sub_ext = { "ass", "ssa", "sub" };
+        public static HashSet<string> video_ext = new HashSet<string>();
+        public static HashSet<string> sub_ext = new HashSet<string>();
 
-        public static string GetExts(int type)
-        {
-            string[] strs;
-            switch (type)
-            {
-                case VIDEO:
-                    strs = video_ext;
-                    break;
-                case SUB:
-                    strs = sub_ext;
-                    break;
-                default:
-                    return "";
-            }
-            string result = "";
-            foreach (string ext in strs)
-            {
-                result = result == "" ? ext : result + "," + ext;
-            }
-            return result;
-        }
 
         public static void SetExts(string exts, int type)
         {
             string[] strs = exts.Split(',');
+            HashSet<string> set;
             switch (type)
             {
                 case VIDEO:
-                    video_ext = strs;
+                    set = video_ext;
                     break;
                 case SUB:
-                    sub_ext = strs;
+                    set = sub_ext;
                     break;
                 default:
                     return;
             }
+            set.Clear();
+            foreach (string str in strs)
+            {
+                set.Add("."+str.ToLower());
+            }
+
         }
     }
 
@@ -76,16 +62,16 @@ namespace SubRenamer
             Splited_filename = Renamer.SplitFileNameForGrouping(file);
         }
 
-        public static List<FileInfo> FileListTOFileInfoList<T>(IEnumerable<T> files) where T : VSFile
-        {
-            var result = new List<FileInfo>();
-            foreach (var item in files)
-            {
-                result.Add(item.File);
-            }
+        //public static List<FileInfo> VSFileListTOFileInfoList<T>(IEnumerable<T> files) where T : VSFile
+        //{
+        //    var result = new List<FileInfo>();
+        //    foreach (var item in files)
+        //    {
+        //        result.Add(item.File);
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
     }
 
     internal class Sub : VSFile
@@ -100,6 +86,38 @@ namespace SubRenamer
         public Video(FileInfo file) : base(file)
         {
         }
+    }
+
+    /// <summary>
+    /// 配好对的一组视频字幕文件，用于生成界面
+    /// </summary>
+    internal class PairedVSFileGroup
+    {
+        /// <summary>
+        /// 视频文件
+        /// </summary>
+        public Video Video { get; set; }
+
+        /// <summary>
+        /// 字幕文件列表
+        /// </summary>
+        public List<Sub> Subs { get; }
+
+        public PairedVSFileGroup(Video v)
+        {
+            Video = v;
+            Subs = new List<Sub>();
+        }
+
+        /// <summary>
+        /// 添加字幕文件进列表
+        /// </summary>
+        /// <param name="sub"></param>
+        public void AddSub(Sub sub)
+        {
+            Subs.Add(sub);
+        }
+
     }
 
 
@@ -120,25 +138,13 @@ namespace SubRenamer
         public List<Video> videos = new List<Video>();
 
         public List<Sub> subs = new List<Sub>();
-        //List<DirectoryInfo> directories = new List<DirectoryInfo>();
-        public List<Names> names = new List<Names>();
-        //private string v_left;
-        //private string v_right;
-        //private string s_left;
-        //private string s_right;
+
 
         public Names(DirectoryInfo dInfo)
         {
             IsRegex = false;
             path = dInfo.Name;
-            SetNames(dInfo, false);
-        }
-
-        public Names(DirectoryInfo dInfo, bool recursion)
-        {
-            IsRegex = false;
-            path = dInfo.Name;
-            SetNames(dInfo, recursion);
+            SetNames(dInfo);
         }
 
         public Names(DirectoryInfo dInfo, string v_left, string v_right, string s_left, string s_right)
@@ -195,7 +201,7 @@ namespace SubRenamer
             return "(" + Video_Left + ")|(" + Video_Right + ")";
         }
 
-        private void SetNames(DirectoryInfo dInfo, bool recursion)
+        private void SetNames(DirectoryInfo dInfo)
         {
             if (dInfo.Exists)
             {
@@ -208,14 +214,6 @@ namespace SubRenamer
                     else if (IsSub(item))
                     {
                         subs.Add(new Sub(item));
-                    }
-                }
-                if (recursion)
-                {
-                    foreach (DirectoryInfo dir in dInfo.GetDirectories())
-                    {
-                        Names name = new Names(dir, true);
-                        names.Add(name);
                     }
                 }
             }
@@ -232,35 +230,17 @@ namespace SubRenamer
         }
 
 
-        private bool MatchExtebsion(FileInfo item, string[] extebsion)
+        private bool MatchExtebsion(FileInfo item, HashSet<string> ext_set)
         {
-            foreach (string ext in extebsion)
-            {
-                if (item.Extension.ToLower() == "." + ext.ToLower()) { return true; }
-            }
-            return false;
+            if (ext_set.Contains(item.Extension.ToLower())) return true;
+            else return false;
         }
 
         internal int GetVideoCount()
         {
             int count = videos.Count;
-            foreach (Names name in names)
-            {
-                count += name.GetVideoCount();
-            }
             return count;
         }
-
-        // public List<FileInfo> GetVideoFileList()
-        // {
-        //     List<FileInfo> res = new List<FileInfo>();
-        //     foreach (Video v in videos)
-        //     {
-        //         _ = res.Add(v.file);
-        //     }
-        //     return res;
-        // }
-
 
         public static string[] GetStrArray(List<Video> list)
         {

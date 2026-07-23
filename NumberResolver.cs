@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SubRenamer
 {
@@ -39,8 +40,6 @@ namespace SubRenamer
 
         public static bool Resolve(Names names)
         {
-            //int idx1,idx2 = 0;
-            // _ = Names.GetStrArray(names.videos);
             try
             {
                 string[] strs = Names.GetStrArray(names.videos);
@@ -92,7 +91,6 @@ namespace SubRenamer
             }
             catch (System.Exception)
             {
-
                 return false;
             }
 
@@ -130,12 +128,12 @@ namespace SubRenamer
         /// <param name="subList"></param>
         /// <param name="tempGroupSubArray"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal static void ResolveGroupFileList<T>(List<T> files, double min_match_rate) where T : VSFile
+        internal static void ResolveVSFileListBYGroup<T>(List<T> files, double min_match_rate) where T : VSFile
         {
             List<VSFileGroup<T>> group = GroupVSFiles(files, min_match_rate);
             foreach (var item in group)
             {
-                ResolveFileList(item.FileList);
+                ResolveVSFileList(item.FileList);
             }
         }
 
@@ -231,7 +229,7 @@ namespace SubRenamer
         /// </summary>
         /// <param name="files"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal static bool ResolveFileList<T>(List<T> files) where T : VSFile
+        internal static bool ResolveVSFileList<T>(List<T> files) where T : VSFile
         {
             // 边界检查：如果列表为空或没有行，返回 -1
             if (files == null || files.Count == 0) return false;
@@ -524,6 +522,15 @@ namespace SubRenamer
             bool overlapInS2 = !(a.s2 + a.len <= b.s2 || b.s2 + b.len <= a.s2);
 
             return overlapInS1 || overlapInS2;
+        }
+
+        internal static void ResolveVSFileListBYRegex<T>(List<T> files, string regex) where T : VSFile
+        {
+            foreach (var file in files)
+            {
+                string num = Regex.Replace(file.File.Name, regex, "");
+                file.Num = num;
+            }
         }
     }
 }

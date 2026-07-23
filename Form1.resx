@@ -204,17 +204,11 @@
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>191, 17</value>
   </metadata>
-  <data name="toolStripStatusLabel1.AutoSize" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>631, 17</value>
+    <value>356, 17</value>
   </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
-  </data>
-  <data name="toolStripProgressBar1.AutoSize" type="System.Boolean, mscorlib">
-    <value>False</value>
   </data>
   <data name="toolStripProgressBar1.Size" type="System.Drawing.Size, System.Drawing">
     <value>100, 16</value>
@@ -264,6 +258,9 @@
   <data name="textBox_videoExt.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
   </data>
+  <data name="textBox_videoExt.Text" xml:space="preserve">
+    <value>mp4,mkv</value>
+  </data>
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>312, 17</value>
   </metadata>
@@ -294,6 +291,9 @@
   <data name="textBox_subExt.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
   </data>
+  <data name="textBox_subExt.Text" xml:space="preserve">
+    <value>ass,ssa,sub,srt</value>
+  </data>
   <data name="textBox_subExt.ToolTip" xml:space="preserve">
     <value>字幕文件扩展名</value>
   </data>
@@ -322,7 +322,7 @@
     <value>16</value>
   </data>
   <data name="textBox_min_match_rate.Text" xml:space="preserve">
-    <value>0.6</value>
+    <value>0.7</value>
   </data>
   <data name="textBox_min_match_rate.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
@@ -472,7 +472,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel_ext.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="textBox_videoExt" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="textBox_subExt" Row="0" RowSpan="1" Column="3" ColumnSpan="1" /&gt;&lt;Control Name="textBox_min_match_rate" Row="0" RowSpan="1" Column="5" ColumnSpan="1" /&gt;&lt;Control Name="label_video_ext" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="label_sub_ext" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="label_min_match_rate" Row="0" RowSpan="1" Column="4" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,75,Percent,50,Absolute,75,Percent,50,Absolute,75,Absolute,58" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="textBox_videoExt" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="textBox_subExt" Row="0" RowSpan="1" Column="3" ColumnSpan="1" /&gt;&lt;Control Name="textBox_min_match_rate" Row="0" RowSpan="1" Column="5" ColumnSpan="1" /&gt;&lt;Control Name="label_video_ext" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="label_sub_ext" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="label_min_match_rate" Row="0" RowSpan="1" Column="4" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,75,Percent,50,Absolute,75,Percent,50,Absolute,75,Absolute,59" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="panel_regex.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -888,6 +888,9 @@
   <data name="button_resolve.Text" xml:space="preserve">
     <value>分析文件名</value>
   </data>
+  <data name="button_resolve.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
   <data name="&gt;&gt;button_resolve.Name" xml:space="preserve">
     <value>button_resolve</value>
   </data>
@@ -900,31 +903,28 @@
   <data name="&gt;&gt;button_resolve.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="button_redo.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="button_redo.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="button_revoke.Location" type="System.Drawing.Point, System.Drawing">
     <value>274, 3</value>
   </data>
-  <data name="button_redo.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="button_revoke.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 21</value>
   </data>
-  <data name="button_redo.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+  <data name="button_revoke.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
   </data>
-  <data name="button_redo.Text" xml:space="preserve">
+  <data name="button_revoke.Text" xml:space="preserve">
     <value>撤销</value>
   </data>
-  <data name="&gt;&gt;button_redo.Name" xml:space="preserve">
-    <value>button_redo</value>
+  <data name="&gt;&gt;button_revoke.Name" xml:space="preserve">
+    <value>button_revoke</value>
   </data>
-  <data name="&gt;&gt;button_redo.Type" xml:space="preserve">
+  <data name="&gt;&gt;button_revoke.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;button_redo.Parent" xml:space="preserve">
+  <data name="&gt;&gt;button_revoke.Parent" xml:space="preserve">
     <value>tableLayoutPanel2</value>
   </data>
-  <data name="&gt;&gt;button_redo.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;button_revoke.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
   <data name="tableLayoutPanel2.Location" type="System.Drawing.Point, System.Drawing">
@@ -952,7 +952,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel2.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="button_name2" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="button_doRename" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="button_regex_panel" Row="0" RowSpan="1" Column="6" ColumnSpan="1" /&gt;&lt;Control Name="button_resolve" Row="0" RowSpan="1" Column="5" ColumnSpan="1" /&gt;&lt;Control Name="button_redo" Row="0" RowSpan="1" Column="4" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,78,Absolute,109,Percent,50,Percent,50,Absolute,57,Absolute,89,Absolute,55" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="button_name2" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="button_doRename" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="button_regex_panel" Row="0" RowSpan="1" Column="6" ColumnSpan="1" /&gt;&lt;Control Name="button_resolve" Row="0" RowSpan="1" Column="5" ColumnSpan="1" /&gt;&lt;Control Name="button_revoke" Row="0" RowSpan="1" Column="4" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,78,Absolute,109,Percent,50,Percent,50,Absolute,57,Absolute,89,Absolute,55" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="panel_filelist.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
