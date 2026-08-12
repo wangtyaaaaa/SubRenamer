@@ -304,7 +304,13 @@ namespace SubRenamer
         /// <returns></returns>
         internal static List<string> SplitFileNameForGrouping(FileInfo file)
         {
-            var filename = file.Name.Replace(file.Extension, "");
+            var extension = GetFullExtension(file);
+            var filename = file.Name.Replace(extension, "");
+
+            if(getSeplitorCount(filename) > 2) {
+                return Split(filename);
+            }
+
             List<string> result = new List<string>();
             StringBuilder current = new StringBuilder();
 
@@ -363,6 +369,29 @@ namespace SubRenamer
             }
 
             return result;
+        }
+
+        private static int getSeplitorCount(string filename)
+        {
+            int count = 0;
+            foreach (var item in filename)
+            {
+                switch (item)
+                {
+                    case '[':
+                    case ']':
+                    case '(':
+                    case ')':
+                    case '{':
+                    case '}':
+                    case '_':
+                    case '-':
+                        count++;
+                        break;
+                    default: break;
+                }
+            }
+            return count;
         }
 
 
@@ -452,6 +481,8 @@ namespace SubRenamer
             s = s.Replace(')', ' ');
             s = s.Replace('{', ' ');
             s = s.Replace('}', ' ');
+            s = s.Replace('-', ' ');
+            s = s.Replace('_', ' ');
             //s = s.Replace('.', ' ');
             s = Regex.Replace(s, "[\\s]+", " ");
             return s;

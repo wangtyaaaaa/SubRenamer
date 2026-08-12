@@ -199,13 +199,13 @@ namespace SubRenamer
 
                         if (total_match_rate >= min_match_rate)
                         {
-                            var _pos1 = GetLikelyEpNumPos(curr_splited_name);
-                            var _pos2 = _group.LikelyEpNumPos;
-                            if (HeadSequenceEqual(_pos1, _pos2) && total_match_rate > match_group_rate)
-                            {
+                            //var _pos1 = GetLikelyEpNumPos(curr_splited_name);
+                            //var _pos2 = _group.LikelyEpNumPos;
+                            //if (HeadSequenceEqual(_pos1, _pos2) && total_match_rate > match_group_rate)
+                            //{
                                 match_group_rate = total_match_rate;
                                 match_group_num = g_num;
-                            }
+                            //}
                         }
                     }
                 }
@@ -245,7 +245,7 @@ namespace SubRenamer
             if (files == null || files.Count == 0) return false;
 
             // 如果只有一个文件，调用单文件提取集号方法
-            if (files.Count <= 1) // 可以调整单文件/一组方法的数量边界
+            if (files.Count <= 2) // 可以调整单文件/一组方法的数量边界
             {
                 foreach (var item in files)
                 {
@@ -262,28 +262,36 @@ namespace SubRenamer
             int maxUniqueCount = -1;
             int maxUniqueColumn = -1;
 
+            
             // 遍历每一列
             for (int col = 0; col < colCount; col++)
             {
+                int current_num = 0;
                 HashSet<string> uniqueValues = new HashSet<string>();
                 // 遍历当前列的每一行
                 foreach (var _v in files)
                 {
                     // 防止某一行长度不足导致越界
                     if (col < _v.Splited_filename.Count)
+                    {
                         // 将值加入 HashSet，自动去重
                         uniqueValues.Add(_v.Splited_filename[col]);
+                        current_num++;
+                    }
                 }
 
-                // 比较当前列的唯一值数量
-                int currentUniqueCount = uniqueValues.Count;
-
-                // 如果当前列的离散度更高，更新结果
-                // 使用 > 而不是 >=，确保在离散度相同时返回最前面的列（最小索引）
-                if (currentUniqueCount > maxUniqueCount)
+                if (current_num == files.Count)
                 {
-                    maxUniqueCount = currentUniqueCount;
-                    maxUniqueColumn = col;
+                    // 比较当前列的唯一值数量
+                    int currentUniqueCount = uniqueValues.Count;
+
+                    // 如果当前列的离散度更高，更新结果
+                    // 使用 > 而不是 >=，确保在离散度相同时返回最前面的列（最小索引）
+                    if (currentUniqueCount > maxUniqueCount)
+                    {
+                        maxUniqueCount = currentUniqueCount;
+                        maxUniqueColumn = col;
+                    }
                 }
             }
 

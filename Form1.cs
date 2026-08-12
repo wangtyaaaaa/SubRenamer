@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SubRenamer
 {
@@ -270,14 +272,38 @@ namespace SubRenamer
 
         private void Panel1_resize(object sender, EventArgs e)
         {
-            foreach (object p in panel_filelist.Controls)
+            Panel panel_filelist = sender as Panel;
+            if (panel_filelist == null) return;
+
+            int scrollW = panel_filelist.VerticalScroll.Visible
+                ? SystemInformation.VerticalScrollBarWidth
+                : 0;
+            int validWidth = panel_filelist.Width - scrollW - 6;
+
+            foreach (Control c in panel_filelist.Controls)
             {
-                if (p is Panel _p)
+                if (c is Panel itemPanel)
                 {
-                    _p.Width = panel_filelist.Width - 6;
+                    itemPanel.Width = validWidth;
+
+                    foreach (Control subC in itemPanel.Controls)
+                    {
+                        if (subC is Label lbl)
+                        {
+                            if (lbl.Name == NAME_VIDEO_LABEL)
+                            {
+                                lbl.Width = itemPanel.Width - 6;
+                            }
+                            else if (lbl.Name == NAME_SUB_LABEL)
+                            {
+                                lbl.Width = itemPanel.Width - 6 - 15;
+                            }
+                        }
+                    }
                 }
             }
         }
+
 
         /// <summary>
         /// 调整正则相关textBox_video_right、textBox_video_right
@@ -558,23 +584,18 @@ namespace SubRenamer
                 Size = new Size(pl_wi, pl_hi),
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 AllowDrop = true,
-                AutoSize = true
+                AutoSize = false,
+                MinimumSize = Size.Empty,
+                MaximumSize = Size.Empty
             };
             //pannel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             //panel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowOnly;
-            panel.AutoSizeChanged += new EventHandler(PanelAutoSizeChanged);
             panel.Margin = new Padding(3);
             panel.Padding = new Padding(3);
             panel.DragDrop += new DragEventHandler(DragDrop_Panel);
             panel.DragEnter += new DragEventHandler(DragEnter_Panel);
             panel.DragLeave += new EventHandler(DragLeave_Panel);
             return panel;
-        }
-
-        private void PanelAutoSizeChanged(object sender, EventArgs e)
-        {
-            if (sender is Panel _s)
-                _s.Width = panel_filelist.Width;
         }
 
         private void DragDrop_Panel(object sender, DragEventArgs e)
@@ -732,43 +753,56 @@ namespace SubRenamer
 
         private Label CreateNewFileLabel(string text, string name, FileInfo file)
         {
-
+            int child_panel_width = panel_filelist.Width - 6;
+            int textW,textH = 23;
+            Label label = null;
             if (name == NAME_VIDEO_LABEL)
             {
-                Label label = new Label
+                label = new Label
                 {
                     BackColor = COLOR_VIDEOLABEL,
                     Text = text,
-                    AutoSize = true,
+                    AutoSize = false,
                     Margin = new Padding(3),
                     Padding = new Padding(3),
                     Name = name,
-                    Tag = file
+                    Tag = file,
+                    TextAlign = ContentAlignment.TopLeft,
+                    AutoEllipsis = true,
+                    MinimumSize = Size.Empty,
+                    Size = new Size(child_panel_width - 6, 23)
                 };
-                return label;
             }
             else if (name == NAME_SUB_LABEL)
             {
-                Label label = new Label
+                label = new Label
                 {
                     BackColor = COLOR_SUBLABEL,
                     Text = text,
-                    AutoSize = true,
+                    AutoSize = false,
                     Margin = new Padding(3),
                     Padding = new Padding(3),
                     Name = name,
-                    Tag = file
+                    Tag = file,
+                    TextAlign = ContentAlignment.TopLeft,
+                    AutoEllipsis = true,
+                    MinimumSize = Size.Empty,
+                    Size = new Size(child_panel_width - 6 - 15, 23)
                 };
                 label.MouseDown += new MouseEventHandler(SubLabel_MouseDown);
                 label.MouseUp += new MouseEventHandler(SubLabel_MouseUp);
                 label.MouseMove += new MouseEventHandler(SubLabel_MouseMove);
                 label.QueryContinueDrag += new QueryContinueDragEventHandler(SubLabel_QueryContinueDrag);
-                return label;
             }
             else
             {
                 return null;
             }
+            textW = TextRenderer.MeasureText(text, label.Font).Width;
+
+            label.MaximumSize = new Size(textW + 6, textH);
+
+            return label;
 
         }
 

@@ -325,7 +325,7 @@
     <value>16</value>
   </data>
   <data name="textBox_min_match_rate.Text" xml:space="preserve">
-    <value>0.7</value>
+    <value>0.6</value>
   </data>
   <data name="textBox_min_match_rate.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Right</value>
@@ -962,6 +962,9 @@
   </data>
   <data name="panel_filelist.AutoScroll" type="System.Boolean, mscorlib">
     <value>True</value>
+  </data>
+  <data name="panel_filelist.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
   </data>
   <data name="panel_filelist.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 33</value>
