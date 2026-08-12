@@ -207,6 +207,9 @@
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
     <value>356, 17</value>
   </data>
+  <data name="toolStripStatusLabel1.Text" xml:space="preserve">
+    <value>拖拽文件夹到窗口加载</value>
+  </data>
   <data name="toolStripStatusLabel1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>

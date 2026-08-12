@@ -15,6 +15,9 @@ namespace SubRenamer
         /// </summary>
         private Names names = null;
 
+#if DEBUG
+        private int debug_drop_leave;
+#endif
 #if ENABLE_CHECK_MESSAGE 
         /// <summary>
         /// 是否确认过提示信息
@@ -30,11 +33,22 @@ namespace SubRenamer
         /// <summary>
         /// 手动修改pannel拖动目标
         /// </summary>
-        private Label dragTraget;
+        private Label dragSubTraget;
         /// <summary>
         /// 拖动时滚动延迟时间
         /// </summary>
         private DateTime scrolltime;
+
+
+        private bool _isExternalFolderDrag = false;
+        //private Point _tipPos;
+
+        /// <summary>
+        /// 保存被临时禁用的子控件及其原始 AllowDrop 值
+        /// </summary>
+        private Dictionary<Control, bool> _savedAllowDrop = new Dictionary<Control, bool>();
+
+
 
         /// <summary>
         /// 手动修改pannel内label高度
@@ -214,8 +228,8 @@ namespace SubRenamer
         {
             SetClickable(true);
             toolStripStatusLabel1.Text = Resource.rename_complete;
-            Button_name2_Click(sender, null);
-            MessageBox.Show("RunWorkerCompleted");
+            Button_name2_Click(null, null);
+            //MessageBox.Show("RunWorkerCompleted");
         }
 
         private void SetClickable(bool p)
@@ -343,6 +357,8 @@ namespace SubRenamer
                 : new Names(dInfo, textBox_video_left.Text, textBox_video_right.Text, textBox_sub_left.Text, textBox_sub_right.Text);
 
             LoadNames(names);
+            if(sender != null)
+                toolStripStatusLabel1.Text = Resource.load_path_complete + " [" + textBox_path.Text + "]";
         }
 
         private void Button_Resolve_Click(object sender, EventArgs e)
@@ -569,14 +585,14 @@ namespace SubRenamer
 #endif
             if (sender is Panel _s)
             {
-                if (dragTraget != null)
+                if (dragSubTraget != null)
                 {
-                    if (!_s.Controls.Contains(dragTraget))
+                    if (!_s.Controls.Contains(dragSubTraget))
                     {
                         //e.Effect = DragDropEffects.Move;
-                        if (dragTraget.Parent is Panel _p)
-                            RemoveSubLabel(_p, dragTraget);
-                        AddNewSubLabel(_s, dragTraget);
+                        if (dragSubTraget.Parent is Panel _p)
+                            RemoveSubLabel(_p, dragSubTraget);
+                        AddNewSubLabel(_s, dragSubTraget);
                     }
                 }
 
@@ -593,9 +609,9 @@ namespace SubRenamer
 #endif
             if (sender is Panel _s)
             {
-                if (dragTraget != null)
+                if (dragSubTraget != null)
                 {
-                    if (!_s.Controls.Contains(dragTraget))
+                    if (!_s.Controls.Contains(dragSubTraget))
                     {
                         e.Effect = DragDropEffects.Move;
                         _s.BackColor = COLOR_CHILD_PANAL_HIGHLIHGT;
@@ -758,13 +774,13 @@ namespace SubRenamer
 
         private void SubLabel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (dragTraget != null)
+            if (dragSubTraget != null)
             {
 #if DEBUG
                 //手动调整窗口时debug用
                 this.toolStripStatusLabel1.Text = "MouseMove (" + e.X + "," + e.Y + ")";
 #endif
-                _ = dragTraget.DoDragDrop(dragTraget.Text, DragDropEffects.Move);
+                _ = dragSubTraget.DoDragDrop(dragSubTraget.Text, DragDropEffects.Move);
                 SetDragTraget(null);
             }
         }
@@ -787,7 +803,7 @@ namespace SubRenamer
 #endif
             if (typeof(Label).IsInstanceOfType(sender))
             {
-                if (dragTraget != null)
+                if (dragSubTraget != null)
                 {
                     SetDragTraget(null);
                 }
@@ -799,18 +815,18 @@ namespace SubRenamer
         {
             if (label == null)
             {
-                if (dragTraget != null)
+                if (dragSubTraget != null)
                 {
-                    dragTraget.BackColor = COLOR_SUBLABEL;
+                    dragSubTraget.BackColor = COLOR_SUBLABEL;
                 }
-                dragTraget = null;
+                dragSubTraget = null;
                 toolStripStatusLabel1.Text = null;
             }
             else
             {
-                dragTraget = label;
-                toolStripStatusLabel1.Text = dragTraget.Text;
-                dragTraget.BackColor = COLOR_SUBLABEL_HIGHLIHGT;
+                dragSubTraget = label;
+                toolStripStatusLabel1.Text = dragSubTraget.Text;
+                dragSubTraget.BackColor = COLOR_SUBLABEL_HIGHLIHGT;
             }
 
         }
@@ -918,6 +934,125 @@ namespace SubRenamer
                 e.SuppressKeyPress = true;
                 // 原生属性，移除焦点
                 this.ActiveControl = null;
+            }
+        }
+
+        /// <summary>
+        /// 工具方法：判断是否是外部拖入的文件夹
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static bool IsExternalFolder(DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return false;
+            var paths = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (paths == null || paths.Length == 0) return false;
+            return Directory.Exists(paths[0]);
+        }
+
+        /// <summary>
+        /// 递归获取所有子控件
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        private IEnumerable<Control> GetAllChildren(Control parent)
+        {
+            foreach (Control child in parent.Controls)
+            {
+                yield return child;
+                foreach (var grandChild in GetAllChildren(child))
+                    yield return grandChild;
+            }
+        }
+
+        /// <summary>
+        /// 临时禁用所有子控件的 AllowDrop
+        /// </summary>
+        private void DisableChildDrop()
+        {
+            _savedAllowDrop.Clear();
+            foreach (var ctrl in GetAllChildren(this))
+            {
+                if (ctrl.AllowDrop)
+                {
+                    _savedAllowDrop[ctrl] = true;
+                    ctrl.AllowDrop = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 恢复所有子控件的 AllowDrop
+        /// </summary>
+        private void RestoreChildDrop()
+        {
+            foreach (var kv in _savedAllowDrop)
+            {
+                kv.Key.AllowDrop = kv.Value;
+            }
+            _savedAllowDrop.Clear();
+        }
+
+        private void Form1_DragDrop(object sender, DragEventArgs e)
+        {
+            _isExternalFolderDrag = false;
+            //this.Invalidate();
+
+            // ★ 恢复子控件拖拽能力
+            RestoreChildDrop();
+
+            if (!IsExternalFolder(e)) return;
+
+            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string folderPath = paths[0];
+
+            // ===== 在这里处理拖入的文件夹 =====
+            textBox_path.Text = folderPath;
+            Button_name2_Click(sender, null);
+            //MessageBox.Show($"收到文件夹：\n{folderPath}");
+            // ================================
+        }
+
+        private void Form1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (IsExternalFolder(e))
+            {
+                _isExternalFolderDrag = true;
+
+                // ★ 关键：禁用子控件的拖拽，阻止它们响应
+                DisableChildDrop();
+
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                // 不是外部文件夹 → 不处理，让子控件正常响应
+                _isExternalFolderDrag = false;
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void Form1_DragLeave(object sender, EventArgs e)
+        {
+            _isExternalFolderDrag = false;
+
+            // ★ 恢复子控件拖拽能力
+#if DEBUG
+            debug_drop_leave++;
+            toolStripStatusLabel1.Text = "debug_drop_leave : " + debug_drop_leave;
+#endif
+            RestoreChildDrop();
+        }
+
+        private void Form1_DragOver(object sender, DragEventArgs e)
+        {
+            if (_isExternalFolderDrag)
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
             }
         }
     }

@@ -79,6 +79,15 @@ namespace SubRenamer {
         }
         
         /// <summary>
+        ///   查找类似 加载完成 的本地化字符串。
+        /// </summary>
+        internal static string load_path_complete {
+            get {
+                return ResourceManager.GetString("load_path_complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 没有操作记录 的本地化字符串。
         /// </summary>
         internal static string no_rename_record {

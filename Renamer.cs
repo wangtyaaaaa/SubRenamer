@@ -13,6 +13,8 @@ namespace SubRenamer
         private static readonly string regex = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|([0-9]{2,5}([pP]))|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))|([0-9a-zA-Z_]{6,200})";
         // private static String regex2 = "(10[Bb][Ii][Tt])|([xXhH]26[45])|(\\d+([\\*Xx])\\d+)|(\\[[0-9a-fA-F]{8}\\])|(YYDM-11FANS)|([a-zA-Z]{2,5}([Rr][Ii][Pp]))";
         private static readonly string regex_headAndTail = "第|話|话|集";
+        private static readonly string regex_episode = @"(?i)episode";
+        private static readonly string regex_ep = @"(?i)ep";
         private static readonly Dictionary<string, string> Redo_Log = new Dictionary<string, string>();
 
 
@@ -81,18 +83,21 @@ namespace SubRenamer
             return Redo_Log.Count > 0;
         }
 
+        /// <summary>
+        /// 获取不含扩展名的完整文件名
+        /// </summary>
+        /// <param name="video">文件信息</param>
+        /// <returns>不含扩展名的完整路径</returns>
         private static string GetFullNameWithOutExtension(FileInfo video)
         {
-            char[] cs = video.FullName.ToArray();
-            for (int i = cs.Length - 1; i >= 0; i--)
+            for (int i = video.FullName.Length - 1; i >= 0; i--)
             {
-                if (cs[i] == '.')
+                if (video.FullName[i] == '.')
                 {
-                    return new string(cs).Substring(0, i);
+                    return video.FullName.Substring(0, i);
                 }
             }
-            string str = cs.ToString();
-            return str ?? "";
+            return video.FullName;
         }
 
 
@@ -153,7 +158,7 @@ namespace SubRenamer
             foreach (T file in list)
             {
                 if (file.Num == num) result.Add(file);
-                else if (file.Num.Contains(".") && num.Contains("."))
+                else if (file.Num.Contains(".") == num.Contains("."))
                 {
                     if (
                         double.TryParse(
@@ -365,26 +370,16 @@ namespace SubRenamer
         /// <summary>
         /// 处理集号，去掉ep，第，集之类的字符，尽量保留纯数字
         /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
+        /// <param name="str">输入字符串</param>
+        /// <returns>解析后的集号</returns>
         internal static string ResolveEpisodeNumber(string str)
         {
-            string str2 = str;
-            while (str2.ToLower().Contains("Episode"))
-            {
-                char[] p = { 'p', 'P' };
-                int index = str2.IndexOfAny(p);
-                str2 = str2.Substring(index + 1);
-            }
-            while (str2.ToLower().Contains("ep"))
-            {
-                char[] p = { 'p', 'P' };
-                int index = str2.IndexOfAny(p);
-                str2 = str2.Substring(index + 1);
-            }
-
-            str2 = Regex.Replace(str2, regex_headAndTail, "");
-            return str2;
+            // 去除 Episode/ep 前缀（大小写不敏感）
+            string result = Regex.Replace(str, regex_episode, "");
+            result = Regex.Replace(result, regex_ep, "");
+            // 去除集号前缀（如"第"、"話"、"话"、"集"）
+            result = Regex.Replace(result, regex_headAndTail, "");
+            return result;
         }
 
         /// <summary>

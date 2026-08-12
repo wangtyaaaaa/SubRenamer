@@ -161,4 +161,8 @@
     <value>请先获取文件</value>
     <comment>pls_load_file</comment>
   </data>
+  <data name="load_path_complete" xml:space="preserve">
+    <value>加载完成</value>
+    <comment>load_path_complete</comment>
+  </data>
 </root>

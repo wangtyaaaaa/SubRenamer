@@ -338,12 +338,17 @@ namespace SubRenamer
             // 
             // Form1
             // 
+            this.AllowDrop = true;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.panel_root);
             this.Name = "Form1";
             this.ShowIcon = false;
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
+            this.DragOver += new System.Windows.Forms.DragEventHandler(this.Form1_DragOver);
+            this.DragLeave += new System.EventHandler(this.Form1_DragLeave);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.panel_root.ResumeLayout(false);

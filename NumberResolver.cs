@@ -183,7 +183,7 @@ namespace SubRenamer
                     var group_head_splited_name = group_head_file.Splited_filename;
 
                     int __a = group_head_splited_name.Count - curr_splited_name.Count;
-                    if (__a < 2 && __a > -2)        //拆分出的文件名长度大致相等
+                    if (__a < 4 && __a > -4)        //拆分出的文件名长度大致相等
                     {
                         double total_match_rate = 0; //对应位置相对元素数
                         for (int col = 0; col < curr_splited_name.Count; col++)
@@ -201,7 +201,7 @@ namespace SubRenamer
                         {
                             var _pos1 = GetLikelyEpNumPos(curr_splited_name);
                             var _pos2 = _group.LikelyEpNumPos;
-                            if (_pos1.SequenceEqual(_pos2) && total_match_rate > match_group_rate)
+                            if (HeadSequenceEqual(_pos1, _pos2) && total_match_rate > match_group_rate)
                             {
                                 match_group_rate = total_match_rate;
                                 match_group_num = g_num;
@@ -222,6 +222,16 @@ namespace SubRenamer
             }
 
             return result;
+        }
+
+        private static bool HeadSequenceEqual(List<int> pos1, List<int> pos2)
+        {
+            int counnt = Math.Min(pos1.Count, pos2.Count);
+            for (int i = 0; i < counnt; i++)
+            {
+                if (pos1[i] != pos2[i]) return false;
+            }
+            return true;
         }
 
         /// <summary>
